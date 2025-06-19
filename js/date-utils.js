@@ -186,11 +186,11 @@ window.dateUtils = (function() {
                 break;
             case 'Day':
             default:
-                // Today only (or until yesterday to avoid incomplete data)
+                // Today's data - use a range that ensures we capture today's data
                 startDate = new Date(today);
-                startDate.setDate(today.getDate() - 1); // Yesterday
+                startDate.setHours(0, 0, 0, 0); // Start of today
                 endDate = new Date(today);
-                endDate.setDate(today.getDate() - 1); // Yesterday
+                endDate.setHours(23, 59, 59, 999); // End of today
                 break;
         }
         return { startDate, endDate };
