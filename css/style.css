@@ -12,8 +12,9 @@ body {
     color: #333;
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    height: 100vh; /* Fixed viewport height */
     overflow: hidden; /* Prevent body from ever scrolling */
+    min-width: 320px; /* Prevent extreme squeeze */
 }
 
 /* --- Header and Navigation --- */
@@ -25,22 +26,34 @@ header {
     align-items: center;
     gap: 1rem;
     flex-shrink: 0;
+    height: 60px; /* Fixed header height */
+    min-height: 60px;
 }
 
 header img {
     height: 28px;
+    flex-shrink: 0;
 }
 
 header h1 {
     margin: 0;
     font-size: 1.25rem;
     color: #002B49;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 nav {
     background-color: #002B49;
     padding: 0 2rem;
     flex-shrink: 0;
+    overflow-x: auto; /* Allow horizontal scroll on small screens */
+    white-space: nowrap;
+    height: 50px; /* Fixed nav height */
+    min-height: 50px;
+    display: flex;
+    align-items: center;
 }
 
 .tab-button {
@@ -52,6 +65,11 @@ nav {
     font-size: 0.9rem;
     transition: background-color 0.3s, color 0.3s;
     border-bottom: 3px solid transparent;
+    white-space: nowrap;
+    display: inline-block;
+    height: 100%;
+    display: flex;
+    align-items: center;
 }
 
 .tab-button:hover {
@@ -68,6 +86,8 @@ main {
     flex-grow: 1;
     position: relative;
     overflow: hidden;
+    min-height: 0;
+    height: calc(100vh - 160px); /* Total height minus header(60px) + nav(50px) + filter(50px) */
 }
 
 .tab-content {
@@ -78,6 +98,7 @@ main {
     right: 0;
     bottom: 0;
     background-color: #f0f2f5;
+    overflow: hidden; /* No scrolling - everything must fit */
 }
 
 .tab-content.active {
@@ -101,24 +122,30 @@ SHARED COMPONENTS
     border-bottom: 1px solid #ddd;
     flex-shrink: 0;
     gap: 1.5rem;
+    height: 50px; /* Fixed filter bar height */
+    min-height: 50px;
+    overflow-x: auto;
 }
 
 #global-filter-container {
     display: flex;
     gap: 1.5rem;
     align-items: center;
+    flex-wrap: wrap;
 }
 
 .filter-control {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    white-space: nowrap;
 }
 
 .filter-label {
     font-weight: bold;
     font-size: 0.8rem;
     color: #334e68;
+    flex-shrink: 0;
 }
 
 /* --- Multi-Select Dropdown --- */
@@ -245,319 +272,152 @@ SHARED COMPONENTS
     font-size: 0.9rem;
 }
 
-/* --- Card & Chart Styles --- */
+/* --- Card & Chart Styles - Viewport Based --- */
 .card,
 .kpi-card {
-    background-color: #fff;
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     display: flex;
     flex-direction: column;
-    border-right: 1px solid #eee;
-    border-bottom: 1px solid #eee;
-    overflow: hidden;
-    position: relative;
-    flex: 1 1 0;
     min-height: 0;
+    overflow: hidden;
 }
 
 .chart-container,
 .chart-container-half {
-    flex-grow: 1;
-    padding: 0.5rem;
     position: relative;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-}
-
-.pagination-controls {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 0.25rem;
-    border-top: 1px solid #eee;
-    flex-shrink: 0;
-    font-size: 0.8rem;
-}
-
-/* 
-==============================================
-PAGE-SPECIFIC LAYOUTS
-==============================================
-*/
-
-/* New, common dashboard grid for Manufacturing */
-.dashboard-grid {
-    flex-grow: 1;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-    height: 100%;
-    gap: 0;
-}
-
-#quality.tab-content.active {
-    display: flex;
-    flex-direction: column;
-}
-
-.quality-container {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
     width: 100%;
-}
-
-.quality-row-top,
-.quality-row-bottom {
-    display: flex;
-    flex: 1 1 0; /* Make rows equal height */
+    overflow: hidden;
+    flex-grow: 1;
     min-height: 0;
 }
 
-.quality-row-top {
-    border-bottom: 1px solid #eee;
-}
-
-.quality-row-top .card,
-.quality-row-bottom .card {
-    flex: 1 1 0;
-    display: flex;
-    flex-direction: column;
-    border-right: 1px solid #eee;
-    padding: 0.5rem 1rem; /* Reduce vertical padding */
-}
-
-.card-title {
-    margin-bottom: 0.5rem; /* Reduce space below title */
-    flex-shrink: 0; /* Prevent title from shrinking */
-}
-
-.quality-row-top .card:last-child,
-.quality-row-bottom .card:last-child {
-    border-right: none;
-}
-
-.quality-row-top .card .chart-container,
-.quality-row-bottom .card .chart-container {
-    flex-grow: 1;
-    position: relative;
-}
-
-.left-panel-stacked {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    overflow: hidden;
-    border-right: 1px solid #eee;
-}
-
-/* --- Manufacturing Dashboard Layout --- */
-/* REMOVED .mfg-grid-container, .mfg-grid-row */
-
-.kpi-card h2 {
-    font-size: 1rem;
-    padding: 0.5rem 0.75rem;
-}
-
-/* 
-==============================================
-MISC & UTILITIES
-==============================================
-*/
-
-.chart-instructions {
-    font-size: 0.8rem;
-    color: #6c757d;
-    text-align: center;
-    margin-top: 1rem;
-}
-
-.kpi-card-full {
-    background-color: #fff;
-    padding: 1.5rem;
-    border-radius: 4px;
-    border: 1px solid #ddd;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
-
-.kpi-card .chart-container {
-    padding: 0.5rem;
-    flex-grow: 1;
-    display: flex; /* Use flexbox to help child canvas resize */
-    flex-direction: column;
-}
-
-.chart-container, .chart-container-large {
-    position: relative;
-    flex-grow: 1;
-    display: flex; /* Ensure chart containers are flex to constrain children */
-    flex-direction: column;
-}
-
+/* Dynamic chart heights based on viewport */
 .chart-container {
-    /* min-height: 350px; <-- This was causing the problem */
+    height: calc((100vh - 220px) / 2.5);
+    min-height: 180px;
+    max-height: 400px;
 }
+
 .chart-container-large {
-    height: 350px;
-    position: relative;
+    height: calc((100vh - 220px) / 2);
+    min-height: 250px;
+    max-height: 500px;
 }
 
 .chart-container-half {
-    height: calc((100% - 30px) / 2); /* Parent height minus title, divided by 2 */
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-}
-
-.quality-row {
-    display: flex;
-    gap: 0;
-    margin-bottom: 0;
-    flex: 1;
-    min-height: 0; /* Important for nested flex containers */
-}
-
-.quality-card, .card {
-    background-color: #fff;
-    padding: 0;
-    border-radius: 4px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    border: 1px solid #e0e0e0;
-    display: flex;
-    flex-direction: column;
-    flex: 1; /* Allow cards to grow and shrink */
-    min-width: 0; /* Prevent flex items from overflowing */
-}
-
-.quality-card:last-child, .card:last-child {
-    border-right: none;
+    height: calc((100vh - 220px) / 4); /* For smaller charts */
+    min-height: 120px;
+    max-height: 300px;
 }
 
 .card-title,
 .kpi-card h2 {
-    margin: 0;
+    margin: 0 0 0.5rem 0;
     font-size: 0.9rem;
     font-weight: 600;
     color: #334e68;
-    padding: 0.5rem 1rem;
-    border-bottom: 1px solid #f0f2f5;
     flex-shrink: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 0.25rem 0;
+}
+
+/* Dashboard Column Containers - Viewport Based */
+.dashboard-column-container {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.quality-card .chart-container, .card .chart-container, .card .chart-container-half {
-    flex-grow: 1;
-    position: relative;
-    padding: 0.5rem;
-    display: flex; /* Use Flexbox */
-    flex-direction: column; /* Stack chart elements vertically */
-}
-
-.quality-card .chart-instructions {
-    font-size: 0.8rem;
-    color: #667eea;
-    text-align: center;
-    margin-top: 0.5rem;
-    padding-top: 0.5rem;
-    border-top: 1px solid #e0e0e0;
-}
-
-.material-analysis-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr; /* 50/50 split */
+    flex-direction: row;
+    width: 100%;
     height: 100%;
-    box-sizing: border-box; /* Ensures padding doesn't break layout */
+    gap: 0.5rem;
+    padding: 0.5rem;
+    box-sizing: border-box;
 }
 
-.material-analysis-container .kpi-card {
-    padding: 0;
-    margin: 0;
-    border: none;
-}
-
-.material-analysis-container .chart-container {
-    padding: 0;
-}
-
-.material-analysis-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0;
-    flex-shrink: 0;
-    height: 40vh;
-}
-
-.material-analysis-grid .kpi-card {
-    flex: 1; /* Make each card take up equal horizontal space */
-    min-width: 0; /* Prevent flex items from overflowing */
-}
-
-.material-analysis-grid .chart-container {
-    height: 18vh; /* Further reduced height for the top charts */
-}
-
-.material-analysis-container .kpi-card-full {
-    flex-grow: 1; /* Allow this card to fill the remaining vertical space */
+.dashboard-column {
     display: flex;
     flex-direction: column;
-    min-height: 0; /* Critical for vertical flex resizing */
+    flex: 1;
+    gap: 0.5rem;
+    min-height: 0;
+    overflow: hidden;
 }
 
-.material-analysis-container .kpi-card-full .chart-container {
-    flex-grow: 1;
+.dashboard-column:not(:last-child) {
+    border-right: 1px solid #ddd;
+    padding-right: 0.5rem;
 }
 
+/* Manufacturing Dashboard Grid */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    padding: 0.5rem;
+    height: 100%;
+    overflow: hidden;
+}
+
+.dashboard-grid .kpi-card {
+    margin-bottom: 0;
+    height: auto;
+    min-height: 0;
+}
+
+/* Material Analysis Container */
+.material-analysis-container {
+    display: flex;
+    height: 100%;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    box-sizing: border-box;
+}
+
+.dashboard-column-large {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Cost Category Analysis */
 .category-analysis-container {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
     height: 100%;
     width: 100%;
-}
-
-.analysis-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem;
-    border-bottom: 1px solid #f0f2f5;
-    flex-shrink: 0;
-}
-
-.analysis-header h1 {
-    margin: 0;
-    font-size: 1.5rem;
-    color: #334e68;
+    overflow: hidden;
 }
 
 .analysis-content-wrapper {
     flex: 1;
     display: flex;
     flex-direction: column;
-    height: 100%; /* Take full height since header is removed */
+    height: 100%;
+    overflow: hidden;
 }
 
 .charts-section {
     height: 50%;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0;
+    gap: 0.5rem;
+    padding: 0.5rem;
     border-bottom: 1px solid #f0f2f5;
 }
 
 .charts-section .kpi-card {
     margin: 0;
-    padding: 1rem;
-    border-radius: 0;
-    border-right: 1px solid #f0f2f5;
+    padding: 0.75rem;
+    border-radius: 4px;
     display: flex;
     flex-direction: column;
-}
-
-.charts-section .kpi-card:last-child {
-    border-right: none;
+    overflow: hidden;
 }
 
 .charts-section .chart-container-large {
@@ -577,1059 +437,316 @@ MISC & UTILITIES
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.4rem 1rem;
+    padding: 0.5rem 1rem;
     border-bottom: 1px solid #e0e0e0;
     flex-shrink: 0;
-}
-
-.grid-header h2 {
-    margin: 0;
-    font-size: 0.9rem;
-    color: #334e68;
-    font-weight: bold;
-}
-
-.grid-controls {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-}
-
-.grid-controls input,
-.grid-controls select {
-    padding: 0.25rem 0.5rem;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
-    font-size: 0.8rem;
-}
-
-.grid-controls input {
-    width: 200px;
+    height: 50px;
+    min-height: 50px;
 }
 
 .grid-container {
     flex: 1;
     overflow: auto;
-    min-height: 0;
-}
-
-#lot-grid {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.75rem;
-}
-
-#lot-grid th {
-    background-color: #f8f9fa;
-    border: 1px solid #dee2e6;
-    padding: 0.25rem 0.4rem;
-    text-align: left;
-    font-weight: 600;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    cursor: pointer;
-    user-select: none;
-    font-size: 0.75rem;
-}
-
-#lot-grid th:hover {
-    background-color: #e9ecef;
-}
-
-#lot-grid th[data-sort]:after {
-    content: ' ↕';
-    color: #6c757d;
-    font-size: 0.7rem;
-}
-
-#lot-grid th.sort-asc:after {
-    content: ' ↑';
-    color: #007bff;
-}
-
-#lot-grid th.sort-desc:after {
-    content: ' ↓';
-    color: #007bff;
-}
-
-#lot-grid td {
-    border: 1px solid #dee2e6;
-    padding: 0.25rem 0.4rem;
-    text-align: left;
-    white-space: nowrap;
-    font-size: 0.75rem;
-}
-
-#lot-grid tbody tr:nth-child(even) {
-    background-color: #f8f9fa;
-}
-
-#lot-grid tbody tr:hover {
-    background-color: #e3f2fd;
-}
-
-/* Status-specific styling */
-#lot-grid .status-completed {
-    color: #28a745;
-    font-weight: 600;
-}
-
-#lot-grid .status-processing {
-    color: #ffc107;
-    font-weight: 600;
-}
-
-/* Cost variance styling */
-#lot-grid .variance-positive {
-    color: #dc3545;
-    font-weight: 600;
-}
-
-#lot-grid .variance-negative {
-    color: #28a745;
-    font-weight: 600;
-}
-
-.grid-pagination {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.4rem 1rem;
-    border-top: 1px solid #e0e0e0;
-    flex-shrink: 0;
-    background-color: #f8f9fa;
-}
-
-.pagination-info {
-    font-size: 0.75rem;
-    color: #6c757d;
-}
-
-#grid-pagination-controls {
-    margin: 0;
-}
-
-#grid-pagination-controls button {
-    margin: 0 1px;
-    padding: 0.25rem 0.5rem;
-    font-size: 0.75rem;
-    border-radius: 4px;
-    border: 1px solid #ced4da;
-    background-color: #f0f0f0;
-    color: #333;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.2s, color 0.2s;
-}
-
-#grid-pagination-controls button:hover:not(:disabled) {
-    background-color: #007bff;
-    color: white;
-    border-color: #007bff;
-}
-
-#grid-pagination-controls button:disabled {
-    background-color: #f8f9fa;
-    color: #6c757d;
-    cursor: not-allowed;
-    opacity: 0.5;
-}
-
-.view-selector label {
-    margin-right: 6px;
-    font-weight: 500;
-    font-size: 0.75rem;
-}
-
-.view-selector select {
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    border: 1px solid #ced4da;
-    font-size: 0.75rem;
-}
-
-/* Removed - replaced by new charts-section styling */
-
-.details-grid-container {
-    background-color: #ffffff;
-    padding: 1rem;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-    overflow-y: auto; /* Allow scrolling for the grid */
-}
-
-.details-grid-container table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 1rem;
-}
-
-.details-grid-container th, .details-grid-container td {
-    padding: 12px 15px;
-    border: 1px solid #e0e0e0;
-    text-align: left;
-}
-
-.details-grid-container th {
-    background-color: #f4f6f8;
-    font-weight: 600;
-}
-
-.details-grid-container tbody tr:nth-child(even) {
-    background-color: #f9f9f9;
-}
-
-.details-grid-container tbody tr:hover {
-    background-color: #e9ecef;
-}
-
-.details-grid-container input[type="text"] {
-    width: calc(100% - 16px);
-    padding: 6px 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 0.9em;
-}
-
-.multi-select-dropdown button {
     background-color: #fff;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    padding: 0.25rem 0.5rem;
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    text-align: left;
-    width: 100%;
-    font-size: 0.9rem;
-    align-items: center; /* Vertically center text and arrow */
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-    background-position: right 0.5rem center;
-    background-repeat: no-repeat;
-    background-size: 1em 1em;
-    padding-right: 2rem; /* Make space for the arrow */
-    height: 28px; /* Explicitly match height of the other select box */
 }
 
-.multi-select-dropdown button .button-text {
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.multi-select-dropdown button:hover {
-    border-color: #a0aec0;
-}
-
-.multi-select-dropdown .dropdown-panel {
-    min-width: 250px; /* Set a minimum width for the dropdown */
-}
-
-.dropdown-panel-header {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 12px;
-    border-bottom: 1px solid #ddd;
-}
-
-.dropdown-panel-header a {
-    color: #007bff;
-    text-decoration: none;
-    font-size: 0.85rem;
-}
-.dropdown-panel-header a:hover {
-    text-decoration: underline;
-}
-
-.multi-select-dropdown {
-    position: relative;
-}
-
-.multi-select-dropdown button {
-    background-color: #fff;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    padding: 0.5rem 1rem;
-    cursor: pointer;
-    min-width: 150px;
-    text-align: left;
-}
-
-.multi-select-dropdown .dropdown-panel {
-    display: none;
-    position: absolute;
-    background-color: #fff;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    z-index: 100;
-    max-height: 250px;
-    overflow-y: auto;
-    padding: 0.5rem;
-}
-
-.multi-select-dropdown .dropdown-panel.show {
-    display: block;
-}
-
-.multi-select-dropdown .dropdown-panel label {
-    display: block;
-    padding: 0.5rem;
-    cursor: pointer;
-    white-space: nowrap;
-}
-
-.multi-select-dropdown .dropdown-panel label:hover {
-    background-color: #f0f2f5;
-}
-
+/* Organizational Costing Container */
 .org-costing-container {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
     width: 100%;
-    min-height: 0; /* Add flexbox sizing constraints */
+    height: 100%;
+    overflow: hidden;
 }
 
-.org-chart-container {
-    flex-grow: 1; /* Make grid fill the container */
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0;
-    min-height: 0; /* Add flexbox sizing constraints */
-}
-
-.costing-level {
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    background-color: #fff;
-    padding: 0;
-    border-radius: 0;
-    box-shadow: none;
-    border-right: 1px solid #f0f2f5;
-}
-.costing-level:last-child {
-    border-right: none;
-    padding-right: 0;
-}
-
-.costing-level h2,
-.chart-header h2 {
-    margin: 0;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: #334e68;
-    padding: 0.5rem 1rem;
-    border-bottom: 1px solid #f0f2f5;
-    flex-shrink: 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-/* This rule was causing the alignment issue */
-/*
-.costing-level h2 {
-    border-bottom: none; 
-    padding-left: 0; 
-    padding-right: 0;
-}
+/* 
+==============================================
+VIEWPORT-BASED RESPONSIVE BREAKPOINTS
+==============================================
 */
 
-.level-container {
-    position: relative;
-    flex-grow: 1; /* Allow chart containers to fill space */
-    min-height: 0; /* Critical for chart.js resizing in a flex container */
-    padding: 0.5rem;
-    display: flex; /* Ensure the container itself is a flex container */
-    flex-direction: column; /* Stack its children (the canvas) vertically */
-}
-
-.sub-chart-title {
-    margin: 0;
-    border-top: 1px solid #f0f2f5;
-    font-size: 0.8rem;
-    color: #334e68;
-    flex-shrink: 0;
-    padding: 0.5rem 1rem;
-    position: relative;
-    min-height: 0; /* Override any fixed heights */
-}
-
-/* This wrapper should not have its own padding */
-.chart-header {
-    padding: 0;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-}
-
-.chart-header h2 {
-    flex-grow: 1; /* Allow the h2 to take up the space */
-    border-bottom: 1px solid #f0f2f5;
-}
-
-.pagination-controls {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.pagination-controls button {
-    padding: 0.25rem 0.75rem;
-    border: 1px solid #ccc;
-    background-color: #f0f0f0;
-    cursor: pointer;
-    border-radius: 4px;
-    font-weight: bold;
-    transition: background-color 0.2s;
-}
-
-.pagination-controls button:hover:not(:disabled) {
-    background-color: #e0e0e0;
-}
-
-.pagination-controls button:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
-}
-
-.pagination-controls span {
-    font-size: 0.9rem;
-    font-weight: bold;
-    margin: 0 0.5rem;
-}
-
-.config-container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 1.5rem;
-    background-color: #fff;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-}
-
-.config-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #ddd;
-    padding-bottom: 1rem;
-    margin-bottom: 1rem;
-}
-
-.config-header h1 {
-    margin: 0;
-    font-size: 1.5rem;
-}
-
-.product-selector label {
-    margin-right: 0.5rem;
-}
-
-.product-selector select, .product-selector button {
-    padding: 0.5rem;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-    margin-left: 0.5rem;
-}
-
-.product-selector button {
-    background-color: #28a745;
-    color: white;
-    cursor: pointer;
-}
-.product-selector button#load-mapping {
-    background-color: #007bff;
-}
-
-.mapping-interface {
-    display: flex;
-    gap: 2rem;
-    flex-grow: 1;
-    min-height: 0;
-}
-
-.op-column {
-    flex: 1;
-    background-color: #f9f9f9;
-    padding: 1rem;
-    border-radius: 8px;
-    border: 1px solid #e0e0e0;
-    display: flex;
-    flex-direction: column;
-}
-
-.op-column h2 {
-    text-align: center;
-    margin-top: 0;
-    font-size: 1.1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid #007bff;
-}
-
-.step-list, .step-list-target {
-    overflow-y: auto;
-    padding: 0.5rem;
-    flex-grow: 1;
-}
-
-.step-item {
-    background-color: #fff;
-    border: 1px solid #ddd;
-    padding: 0.75rem 1rem;
-    margin-bottom: 0.5rem;
-    border-radius: 4px;
-    cursor: grab;
-    transition: background-color 0.2s, box-shadow 0.2s;
-    font-size: 0.9rem;
-}
-
-.step-item:active {
-    cursor: grabbing;
-    background-color: #e2f3ff;
-}
-.step-item.dragging {
-    opacity: 0.5;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-}
-.step-item.mapped {
-    opacity: 0.4;
-    cursor: not-allowed;
-    background-color: #e9ecef;
-}
-
-.sap-target {
-    border: 1px solid #ccc;
-    margin-bottom: 1rem;
-    padding: 0.75rem;
-    border-radius: 6px;
-    background-color: #f8f9fa;
-    transition: background-color 0.2s;
-}
-
-.sap-target.drag-over {
-    background-color: #e0f0ff;
-    border-color: #007bff;
-}
-
-.sap-target-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem 1rem;
-    background-color: #e9ecef;
-    border-bottom: 1px solid #ced4da;
-}
-
-.planned-cost {
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: #495057;
-}
-
-.cost-breakdown {
-    list-style: none;
-    padding: 0.5rem 1rem;
-    margin: 0;
-    font-size: 0.85rem;
-    background-color: #f8f9fa;
-}
-
-.cost-breakdown li {
-    display: flex;
-    justify-content: space-between;
-    padding: 0.25rem 0;
-}
-
-.item-cost {
-    font-weight: 500;
-}
-
-.mapped-list {
-    padding: 0.5rem;
-    min-height: 50px;
-    background: #fff;
-    border-radius: 4px;
-    border: 1px solid #eee;
-}
-
-.mapped-item {
-    display: inline-block;
-    background-color: #cce5ff;
-    color: #004085;
-    padding: 0.25rem 0.5rem;
-    border-radius: 12px;
-    margin-right: 0.5rem;
-    margin-bottom: 0.5rem;
-    font-size: 0.85rem;
-    cursor: pointer;
-}
-.mapped-item:hover::after {
-    content: ' ⓧ';
-    color: #dc3545;
-}
-
-@media (max-width: 1200px) {
-    .mapping-interface {
-        flex-direction: column;
+/* Large Desktop (1400px+) - More charts horizontally */
+@media (min-width: 1400px) {
+    .dashboard-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .chart-container {
+        height: calc((100vh - 220px) / 2.5);
+        min-height: 180px;
+    }
+    
+    .chart-container-large {
+        height: calc((100vh - 220px) / 2);
+        min-height: 250px;
+    }
+    
+    .kpi-card h2 {
+        font-size: 1rem;
     }
 }
 
-@media (max-width: 992px) {
-    .quality-row {
-        flex-direction: column;
+/* Medium Desktop (1200px - 1399px) */
+@media (max-width: 1399px) and (min-width: 1200px) {
+    .dashboard-grid {
+        grid-template-columns: repeat(2, 1fr);
     }
-    .material-analysis-grid {
-        grid-template-columns: 1fr;
+    
+    .chart-container {
+        height: calc((100vh - 220px) / 3);
+        min-height: 160px;
+    }
+    
+    .chart-container-large {
+        height: calc((100vh - 220px) / 2.2);
+        min-height: 220px;
     }
 }
 
-@media (max-width: 768px) {
-    main {
+/* Small Desktop / Large Tablet (992px - 1199px) - 2 columns */
+@media (max-width: 1199px) and (min-width: 992px) {
+    .dashboard-column-container {
+        flex-direction: row; /* Keep 2-3 columns */
+    }
+    
+    .dashboard-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .chart-container {
+        height: calc((100vh - 240px) / 3);
+        min-height: 140px;
+    }
+    
+    .chart-container-large {
+        height: calc((100vh - 240px) / 2.5);
+        min-height: 180px;
+    }
+    
+    .kpi-card {
         padding: 0.5rem;
     }
-    nav {
-        padding: 0 0.5rem;
-    }
-    .tab-button {
-        padding: 0.75rem;
-        font-size: 0.9rem;
+    
+    .kpi-card h2 {
+        font-size: 0.85rem;
     }
 }
 
-.quality-card.quality-card-half {
-    width: calc(50% - 1rem);
-}
-
-.material-analysis-grid {
-    display: flex;
-    gap: 1.5rem;
-    align-items: flex-start;
-}
-
-.material-chart-container-half {
-    position: relative;
-    height: 30vh; /* Reduced height */
-    width: 100%;
-}
-
-.kpi-card-full .chart-container {
-    height: 40vh; /* Ensure bottom chart has enough space */
-}
-
-#org-costing-level-1-wrapper {
-    display: flex;
-    flex-direction: column;
-}
-
-#level-1-container {
-    flex-grow: 1;
-    min-height: 0; /* Prevents flexbox overflow issues */
-}
-
-.chart-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 1rem;
-    flex-shrink: 0; /* Prevent the header from shrinking */
-}
-
-.chart-header h2 {
-    margin: 0.75rem 0;
-}
-
-.pagination-controls {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.pagination-controls button {
-    padding: 0.25rem 0.75rem;
-    border: 1px solid #ccc;
-    background-color: #f0f0f0;
-    cursor: pointer;
-    border-radius: 4px;
-    font-weight: bold;
-    transition: background-color 0.2s;
-}
-
-.pagination-controls button:hover:not(:disabled) {
-    background-color: #e0e0e0;
-}
-
-.pagination-controls button:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
-}
-
-.pagination-controls span {
-    font-size: 0.9rem;
-    font-weight: bold;
-    margin: 0 0.5rem;
-}
-
-main {
-    flex-grow: 1;
-    padding: 1.5rem;
-    overflow-y: auto;
-}
-
-#manufacturing-charts, #quality-charts {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 20px;
-}
-
-.pagination-controls {
-    text-align: center;
-    margin-top: 10px;
-}
-
-.pagination-controls button {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-    margin: 0 5px;
-}
-
-.pagination-controls button:disabled {
-    background-color: #6c757d;
-    cursor: not-allowed;
-}
-
-@media (min-width: 1200px) {
-    #manufacturing-charts {
-        grid-template-columns: 1fr 1fr;
+/* Tablet (768px - 991px) - Single column but fit everything */
+@media (max-width: 991px) and (min-width: 768px) {
+    .dashboard-column-container {
+        flex-direction: column !important;
+        gap: 0.25rem;
     }
-
-    #process-time-variance-container {
-        grid-column: 2 / 3;
-        grid-row: 1 / 2;
+    
+    .dashboard-column {
+        flex: none !important;
+        gap: 0.25rem;
     }
-
-    #wip-trend-container {
-       grid-column: 1 / 2;
-       grid-row: 1 / 2;
+    
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: 0.25rem;
     }
-
-    #yield-trend-container {
-        grid-column: 1 / 3; /* Span both columns */
+    
+    .chart-container {
+        height: calc((100vh - 260px) / 6); /* Fit 6 charts vertically */
+        min-height: 100px;
+        max-height: 150px;
     }
-}
-
-@media (min-width: 1400px) {
-    .mfg-top-grid {
-        grid-template-columns: repeat(3, 1fr);
+    
+    .chart-container-large {
+        height: calc((100vh - 260px) / 4); /* Larger charts */
+        min-height: 120px;
+        max-height: 180px;
     }
-}
-
-.chart-tooltip {
-    background: rgba(0, 0, 0, 0.75);
-    color: white;
-    padding: 8px 12px;
-    border-radius: 4px;
-    font-size: 12px;
-    pointer-events: none;
-    transition: all 0.2s ease-out;
-}
-
-.pagination-controls {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 5px;
-    margin-top: 8px;
-    user-select: none;
-}
-.pagination-controls button {
-    background-color: #f0f0f0;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    padding: 4px 8px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.2s, color 0.2s;
-}
-.pagination-controls button:hover:not(:disabled) {
-    background-color: #007bff;
-    color: white;
-    border-color: #007bff;
-}
-.pagination-controls button:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
-}
-.pagination-controls .page-info {
-    font-size: 12px;
-    font-weight: bold;
-    padding: 0 5px;
-    min-width: 80px;
-    text-align: center;
-}
-
-.mfg-column-wrapper {
-    display: flex;
-    flex-direction: column;
-    width: 33%;
-    gap: 1.5rem;
-}
-
-#mfg-planned-cost-pagination,
-#process-time-pagination,
-#cycle-time-pagination {
-    border-top: 1px solid #eee;
-}
-
-.dashboard-content-grid {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    flex-grow: 1;
-    gap: 0;
-    padding: 0;
-    overflow: hidden; /* Prevent this grid from scrolling */
-}
-
-.left-panel-stacked {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    overflow: hidden; /* Prevent this panel from scrolling */
-}
-
-#quality .dashboard-content-grid {
-    padding: 0;
-    gap: 0;
-    display: grid;
-    flex-grow: 1;
-    min-height: 0;
-}
-
-#quality .left-panel-stacked {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-}
-
-#quality .card {
-    border-radius: 0;
-    border-bottom: 1px solid #eee;
-    border-right: 1px solid #eee;
-    box-shadow: none;
-    border-top: none;
-    border-left: none;
-    flex: 1 1 auto; /* Allow card to grow and shrink, with auto basis */
-    min-height: 0; /* Allow card to shrink below its content size */
-    display: flex;
-    flex-direction: column;
-}
-
-#quality .left-panel-stacked .card:last-child {
-    border-bottom: none;
-}
-
-main {
-    flex-grow: 1;
-    padding: 0; /* Ensures no extra padding on main content area */
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    position: relative; 
-}
-
-#manufacturing-charts, #quality-charts {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 20px;
-}
-
-.pagination-controls {
-    text-align: center;
-    margin-top: 10px;
-}
-
-.pagination-controls button {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-    margin: 0 5px;
-}
-
-.pagination-controls button:disabled {
-    background-color: #6c757d;
-    cursor: not-allowed;
-}
-
-@media (min-width: 1200px) {
-    #manufacturing-charts {
-        grid-template-columns: 1fr 1fr;
+    
+    .kpi-card {
+        padding: 0.4rem;
+        margin-bottom: 0.25rem;
     }
-
-    #process-time-variance-container {
-        grid-column: 2 / 3;
-        grid-row: 1 / 2;
+    
+    .kpi-card h2 {
+        font-size: 0.8rem;
+        margin-bottom: 0.25rem;
     }
-
-    #wip-trend-container {
-       grid-column: 1 / 2;
-       grid-row: 1 / 2;
-    }
-
-    #yield-trend-container {
-        grid-column: 1 / 3; /* Span both columns */
-    }
-}
-
-@media (min-width: 1400px) {
-    .mfg-top-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-
-.chart-tooltip {
-    background: rgba(0, 0, 0, 0.75);
-    color: white;
-    padding: 8px 12px;
-    border-radius: 4px;
-    font-size: 12px;
-    pointer-events: none;
-    transition: all 0.2s ease-out;
-}
-
-.pagination-controls {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 5px;
-    margin-top: 8px;
-    user-select: none;
-}
-.pagination-controls button {
-    background-color: #f0f0f0;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    padding: 4px 8px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.2s, color 0.2s;
-}
-.pagination-controls button:hover:not(:disabled) {
-    background-color: #007bff;
-    color: white;
-    border-color: #007bff;
-}
-.pagination-controls button:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
-}
-.pagination-controls .page-info {
-    font-size: 12px;
-    font-weight: bold;
-    padding: 0 5px;
-    min-width: 80px;
-    text-align: center;
-}
-
-.mfg-column-wrapper {
-    display: flex;
-    flex-direction: column;
-    width: 33%;
-    gap: 1.5rem;
-}
-
-#mfg-planned-cost-pagination,
-#process-time-pagination,
-#cycle-time-pagination {
-    border-top: 1px solid #eee;
-}
-
-.dashboard-content-grid {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    flex-grow: 1;
-    gap: 0;
-    padding: 0;
-    overflow: hidden; /* Prevent this grid from scrolling */
-}
-
-.left-panel-stacked {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    overflow: hidden; /* Prevent this panel from scrolling */
-}
-
-.chart-container-half {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    position: relative; /* Needed for Chart.js canvas */
-    min-height: 0; /* Critical for nested flex sizing */
-}
-
-#material-analysis .material-analysis-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
-}
-
-#material-analysis .kpi-card-full {
-    grid-column: 1 / -1;
-}
-
-@media (max-width: 992px) {
-    .quality-row {
-        flex-direction: column;
-    }
-    .material-analysis-grid {
+    
+    /* Cost Category Analysis - adjust for tablet */
+    .charts-section {
+        height: 40%;
         grid-template-columns: 1fr;
     }
+    
+    .grid-section {
+        height: 60%;
+    }
 }
 
-.dashboard-column-container {
-    display: flex;
-    flex-direction: row;
-    width: 100%;
-    height: 100%;
+/* Mobile (less than 768px) - Ultra compact single page */
+@media (max-width: 767px) {
+    body {
+        font-size: 12px;
+    }
+    
+    header {
+        height: 50px;
+        min-height: 50px;
+        padding: 0.25rem 0.5rem;
+    }
+    
+    nav {
+        height: 40px;
+        min-height: 40px;
+    }
+    
+    #global-filter-bar {
+        height: 40px;
+        min-height: 40px;
+        padding: 0.25rem 0.5rem;
+    }
+    
+    main {
+        height: calc(100vh - 130px); /* Adjusted for smaller header/nav */
+    }
+    
+    .tab-button {
+        padding: 0.25rem 0.75rem;
+        font-size: 0.75rem;
+    }
+    
+    .dashboard-column-container {
+        flex-direction: column !important;
+        gap: 0.2rem;
+        padding: 0.25rem;
+    }
+    
+    .dashboard-column {
+        gap: 0.2rem;
+    }
+    
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: 0.2rem;
+        padding: 0.25rem;
+    }
+    
+    .kpi-card {
+        padding: 0.3rem;
+        margin-bottom: 0.2rem;
+    }
+    
+    .kpi-card h2 {
+        font-size: 0.75rem;
+        margin-bottom: 0.2rem;
+    }
+    
+    .chart-container {
+        height: calc((100vh - 150px) / 8); /* Fit 8 charts on mobile */
+        min-height: 80px;
+        max-height: 120px;
+    }
+    
+    .chart-container-large {
+        height: calc((100vh - 150px) / 6);
+        min-height: 90px;
+        max-height: 140px;
+    }
+    
+    .chart-container-half {
+        height: calc((100vh - 150px) / 10);
+        min-height: 60px;
+        max-height: 100px;
+    }
+    
+    /* Cost Category Analysis - mobile optimization */
+    .charts-section {
+        height: 35%;
+        grid-template-columns: 1fr;
+        gap: 0.2rem;
+        padding: 0.25rem;
+    }
+    
+    .grid-section {
+        height: 65%;
+    }
+    
+    .grid-header {
+        height: 40px;
+        min-height: 40px;
+        padding: 0.25rem 0.5rem;
+    }
 }
 
-.dashboard-column, .dashboard-column-large {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    border-right: 1px solid #ddd;
+/* Extra Small Mobile (less than 480px) - Minimal UI */
+@media (max-width: 479px) {
+    body {
+        font-size: 11px;
+    }
+    
+    header {
+        height: 45px;
+        min-height: 45px;
+        padding: 0.2rem 0.4rem;
+    }
+    
+    header h1 {
+        font-size: 0.9rem;
+    }
+    
+    nav {
+        height: 35px;
+        min-height: 35px;
+    }
+    
+    #global-filter-bar {
+        height: 35px;
+        min-height: 35px;
+        padding: 0.2rem 0.4rem;
+    }
+    
+    main {
+        height: calc(100vh - 115px);
+    }
+    
+    .tab-button {
+        padding: 0.2rem 0.5rem;
+        font-size: 0.7rem;
+    }
+    
+    .kpi-card {
+        padding: 0.25rem;
+        margin-bottom: 0.15rem;
+    }
+    
+    .kpi-card h2 {
+        font-size: 0.7rem;
+        margin-bottom: 0.15rem;
+    }
+    
+    .chart-container {
+        height: calc((100vh - 130px) / 10);
+        min-height: 60px;
+        max-height: 90px;
+    }
+    
+    .chart-container-large {
+        height: calc((100vh - 130px) / 8);
+        min-height: 70px;
+        max-height: 110px;
+    }
+    
+    .chart-container-half {
+        height: calc((100vh - 130px) / 12);
+        min-height: 50px;
+        max-height: 80px;
+    }
 }
 
-.dashboard-column-large {
-    flex: 2; /* Takes up twice the space of a normal column */
-}
-
-.dashboard-column:last-child, .dashboard-column-large:last-child {
-    border-right: none;
-}
-
-.dashboard-column .kpi-card {
-    border-bottom: 1px solid #ddd;
-}
-
-.dashboard-column .kpi-card:last-child {
-    border-bottom: none;
-}
-
-.two-column-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-gap: 1rem; /* Adjust gap as needed */
-    padding: 1rem;
-    height: 100%;
-    overflow: auto;
+/* Force Chart Responsiveness */
+@media screen {
+    canvas {
+        max-width: 100% !important;
+        height: auto !important;
+    }
 } 

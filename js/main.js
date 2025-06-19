@@ -9,6 +9,66 @@
 
     let activeTabId = null;
     const initializedTabs = new Map();
+    let loadingComplete = false;
+
+    // Loading management
+    function hideLoadingOverlay() {
+        if (loadingComplete) return;
+        
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const body = document.body;
+        
+        if (loadingOverlay && body) {
+            loadingComplete = true;
+            body.classList.remove('loading');
+            body.classList.add('loaded');
+            
+            // Fade out loading overlay
+            setTimeout(() => {
+                loadingOverlay.style.opacity = '0';
+                setTimeout(() => {
+                    loadingOverlay.style.display = 'none';
+                }, 300);
+            }, 100);
+            
+            console.log("Loading overlay hidden - application ready");
+        }
+    }
+
+    // Check if all critical resources are loaded
+    function checkLoadingComplete() {
+        // Update progress tracking
+        if (window.loadingSteps) {
+            if (typeof Chart !== 'undefined' && !window.loadingSteps.chartsReady) {
+                window.loadingSteps.chartsReady = true;
+                window.updateLoadingProgress && window.updateLoadingProgress();
+            }
+            
+            if ((typeof window.costingData !== 'undefined' || typeof window.semiconductorStepsData !== 'undefined') && !window.loadingSteps.dataReady) {
+                window.loadingSteps.dataReady = true;
+                window.updateLoadingProgress && window.updateLoadingProgress();
+            }
+        }
+        
+        // Check if Chart.js is loaded
+        if (typeof Chart === 'undefined') {
+            setTimeout(checkLoadingComplete, 100);
+            return;
+        }
+        
+        // Check if critical data is available
+        if (typeof window.costingData === 'undefined' && typeof window.semiconductorStepsData === 'undefined') {
+            setTimeout(checkLoadingComplete, 100);
+            return;
+        }
+        
+        hideLoadingOverlay();
+    }
+
+    // Start checking for loading completion
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(checkLoadingComplete, 500); // Give a small delay for scripts to load
+    });
 
     function destroyAllCharts() {
         console.log("Destroying all chart instances...");
@@ -113,6 +173,9 @@
         if (initialActiveTab) {
             initialActiveTab.click();
         }
+        
+        // Ensure loading overlay is hidden after setup
+        setTimeout(hideLoadingOverlay, 1000);
     });
 
 })(); 

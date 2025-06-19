@@ -280,8 +280,8 @@
     };
 
     // --- Event-driven Initialization ---
-    // Listen for the dataReady event to bootstrap the module.
-    document.addEventListener('dataReady', () => {
+    // Listen for the enhancedDataReady event to bootstrap the module.
+document.addEventListener('enhancedDataReady', () => {
         // If the tab is already active when data loads, initialize immediately.
         if (document.getElementById('material-analysis')?.classList.contains('active')) {
             initialize();

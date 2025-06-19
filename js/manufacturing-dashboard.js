@@ -5,7 +5,7 @@
         return;
     }
 
-    console.log("Manufacturing Dashboard script loaded. Waiting for dataReady to initialize.");
+    console.log("Manufacturing Dashboard script loaded. Waiting for enhancedDataReady to initialize.");
     
     // --- Module-level state ---
     let charts = {};
@@ -53,7 +53,7 @@
                 console.log("Manufacturing Dashboard: Data is ready, updating charts now.");
                 updateAllManufacturingCharts();
             } else {
-                console.log("Manufacturing Dashboard: Waiting for dataReady event.");
+                console.log("Manufacturing Dashboard: Waiting for enhancedDataReady event.");
             }
         } catch (error) {
             console.error("Manufacturing Dashboard: CRITICAL ERROR during initialization.", error);
@@ -662,8 +662,8 @@
     }
     
     // --- Event Listener for Data ---
-    document.addEventListener('dataReady', () => {
-        console.log("Manufacturing Dashboard: dataReady event received.");
+    document.addEventListener('enhancedDataReady', () => {
+        console.log("Manufacturing Dashboard: enhancedDataReady event received.");
         isDataReady = true;
         if (isInitialized) {
             console.log("Manufacturing Dashboard: Module is initialized, calling updateAllManufacturingCharts.");

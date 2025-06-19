@@ -190,6 +190,9 @@ window.chartUtils = (function() {
     let colorIndex = 0;
     let processAreaColorIndex = 0;
 
+    // Track all chart instances for responsive resizing
+    const chartInstances = new Map();
+
     function getProductColor(productName) {
         if (!productName) return chartColors.main[chartColors.main.length - 1];
         if (!productColors[productName]) {
@@ -208,6 +211,117 @@ window.chartUtils = (function() {
         return processAreaColors[processAreaName];
     }
 
+    // Register chart for responsive handling
+    function registerChart(chartId, chartInstance) {
+        if (chartInstance && chartId) {
+            chartInstances.set(chartId, chartInstance);
+        }
+    }
+
+    // Unregister chart
+    function unregisterChart(chartId) {
+        chartInstances.delete(chartId);
+    }
+
+    // Force all charts to resize
+    function resizeAllCharts() {
+        chartInstances.forEach((chart, chartId) => {
+            if (chart && typeof chart.resize === 'function') {
+                try {
+                    chart.resize();
+                } catch (error) {
+                    console.warn(`Failed to resize chart ${chartId}:`, error);
+                }
+            }
+        });
+    }
+
+    // Enhanced destroyChart function
+    function destroyChart(chartInstance) {
+        if (chartInstance) {
+            // Find and remove from registry
+            for (const [chartId, chart] of chartInstances.entries()) {
+                if (chart === chartInstance) {
+                    chartInstances.delete(chartId);
+                    break;
+                }
+            }
+            
+            chartInstance.destroy();
+            chartInstance = null;
+        }
+    }
+
+    // Responsive resize handler with debouncing
+    let resizeTimeout;
+    function handleResize() {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+            resizeAllCharts();
+        }, 100); // Debounce resize events
+    }
+
+    // Setup responsive behavior
+    function initResponsive() {
+        // Listen for window resize
+        window.addEventListener('resize', handleResize);
+        
+        // Listen for orientation change on mobile
+        if ('onorientationchange' in window) {
+            window.addEventListener('orientationchange', () => {
+                // Delay resize to allow orientation to complete
+                setTimeout(handleResize, 500);
+            });
+        }
+
+        // Force initial resize after DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                setTimeout(resizeAllCharts, 100);
+            });
+        } else {
+            setTimeout(resizeAllCharts, 100);
+        }
+    }
+
+    // Enhanced chart creation helper
+    function createResponsiveChart(canvasId, config, options = {}) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) {
+            console.error(`Canvas with id '${canvasId}' not found`);
+            return null;
+        }
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+            console.error(`Unable to get 2D context for canvas '${canvasId}'`);
+            return null;
+        }
+
+        // Ensure responsive options are set
+        if (!config.options) config.options = {};
+        config.options.responsive = true;
+        config.options.maintainAspectRatio = false;
+
+        // Add resize handling
+        if (config.options.onResize) {
+            const originalOnResize = config.options.onResize;
+            config.options.onResize = function(chart, newSize) {
+                originalOnResize.call(this, chart, newSize);
+                // Additional resize logic if needed
+            };
+        }
+
+        try {
+            const chart = new Chart(ctx, config);
+            registerChart(canvasId, chart);
+            return chart;
+        } catch (error) {
+            console.error(`Failed to create chart '${canvasId}':`, error);
+            return null;
+        }
+    }
+
     return {
         colors: PALETTE,
         chartColors,
@@ -218,7 +332,17 @@ window.chartUtils = (function() {
         destroyChart,
         fabPointStyles,
         getProductColor,
-        getProcessAreaColor
+        getProcessAreaColor,
+        registerChart,
+        unregisterChart,
+        resizeAllCharts,
+        createResponsiveChart,
+        initResponsive
     };
 
-})(); 
+})();
+
+// Initialize responsive behavior when the script loads
+if (typeof window !== 'undefined') {
+    window.chartUtils.initResponsive();
+} 

@@ -1,6 +1,6 @@
 // This script will manage the global filters for the dashboard.
 
-document.addEventListener('dataReady', () => {
+document.addEventListener('enhancedDataReady', () => {
     console.log("Global Filters script initializing...");
 
     const { configData } = window.appData;

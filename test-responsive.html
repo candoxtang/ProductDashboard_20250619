@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>響應式測試 - PDF Operational Product Costing</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* 測試用的視覺提示 */
+        .debug-info {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 9999;
+        }
+        
+        .breakpoint-indicator {
+            background: #007bff;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 3px;
+            margin-bottom: 5px;
+        }
+        
+        /* 測試圖表容器 */
+        .test-chart {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #f0f0f0 25%, transparent 25%), 
+                        linear-gradient(-45deg, #f0f0f0 25%, transparent 25%), 
+                        linear-gradient(45deg, transparent 75%, #f0f0f0 75%), 
+                        linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            border: 2px solid #007bff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: #007bff;
+            text-align: center;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        
+        /* 顯示佈局模式 */
+        .layout-info {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,128,0,0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 11px;
+            z-index: 9998;
+        }
+    </style>
+</head>
+<body>
+    <!-- 調試信息 -->
+    <div class="debug-info">
+        <div class="breakpoint-indicator" id="breakpoint-display">螢幕大小: <span id="screen-size"></span></div>
+        <div>寬度: <span id="width-display"></span>px</div>
+        <div>高度: <span id="height-display"></span>px</div>
+    </div>
+    
+    <!-- 佈局信息 -->
+    <div class="layout-info" id="layout-info">
+        佈局模式: <span id="layout-mode">3欄位</span>
+    </div>
+
+    <header>
+        <img src="assets/pdf-logo-2color-TM-transparent-small.webp" alt="PDF Solutions Logo">
+        <h1>響應式測試 - Organizational Costing Overview</h1>
+    </header>
+    
+    <nav>
+        <button class="tab-button active" data-tab="org-costing-overview">組織成本概覽</button>
+        <button class="tab-button" data-tab="quality">品質與流程</button>
+        <button class="tab-button" data-tab="manufacturing">製造與生產</button>
+        <button class="tab-button" data-tab="material-analysis">材料分析</button>
+    </nav>
+    
+    <div id="global-filter-bar" class="filter-bar">
+        <div id="global-filter-container">
+            <div class="filter-control">
+                <label class="filter-label">產品:</label>
+                <div class="multi-select-dropdown">
+                    <button type="button">
+                        <span class="button-text">所有產品</span>
+                        <span>▼</span>
+                    </button>
+                </div>
+            </div>
+            <div class="filter-control">
+                <label class="filter-label">製程區域:</label>
+                <div class="multi-select-dropdown">
+                    <button type="button">
+                        <span class="button-text">所有區域</span>
+                        <span>▼</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="filter-group-right">
+            <label for="aggregation-select">檢視方式:</label>
+            <select id="aggregation-select">
+                <option value="Day">日</option>
+                <option value="Week">週</option>
+                <option value="Month" selected>月</option>
+                <option value="Quarter">季</option>
+                <option value="Year">年</option>
+            </select>
+            <span id="time-range-display" class="time-range-indicator">當前月份</span>
+        </div>
+    </div>
+    
+    <main>
+        <!-- Organizational Costing Tab -->
+        <div id="org-costing-overview" class="tab-content active">
+            <div class="org-costing-container">
+                <div class="dashboard-column-container">
+                    <div class="dashboard-column">
+                        <div class="kpi-card">
+                            <div class="chart-header">
+                                <h2>Product Planned vs Actual Costs</h2>
+                                <div class="pagination-controls">
+                                    <button>«</button>
+                                    <button>‹</button>
+                                    <span>頁面 1 / 5</span>
+                                    <button>›</button>
+                                    <button>»</button>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <div class="test-chart">
+                                    圖表 1:<br/>
+                                    產品計劃 vs 實際成本<br/>
+                                    (含分頁控制)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dashboard-column">
+                        <div class="kpi-card">
+                            <div class="card-title">Variance Costs by Process Area</div>
+                            <div class="chart-container">
+                                <div class="test-chart">
+                                    圖表 2:<br/>
+                                    製程區域變異成本
+                                </div>
+                            </div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="card-title">Variance Trend by Process Area</div>
+                            <div class="chart-container">
+                                <div class="test-chart">
+                                    圖表 3:<br/>
+                                    製程區域變異趨勢
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dashboard-column">
+                        <div class="kpi-card">
+                            <div class="card-title">Variance by MES Step</div>
+                            <div class="chart-container">
+                                <div class="test-chart">
+                                    圖表 4:<br/>
+                                    MES 步驟變異
+                                </div>
+                            </div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="card-title">Yield Trend by Process Area</div>
+                            <div class="chart-container">
+                                <div class="test-chart">
+                                    圖表 5:<br/>
+                                    製程區域良率趨勢
+                                </div>
+                            </div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="card-title">Top 10 Scrap MES Operational Steps</div>
+                            <div class="chart-container">
+                                <div class="test-chart">
+                                    圖表 6:<br/>
+                                    前10名廢料MES操作步驟
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quality Process Tab for Comparison -->
+        <div id="quality" class="tab-content">
+            <div class="dashboard-column-container">
+                <div class="dashboard-column">
+                    <div class="kpi-card">
+                        <div class="card-title">Total Scrap Cost by Product</div>
+                        <div class="chart-container">
+                            <div class="test-chart">
+                                Quality 圖表 1:<br/>
+                                產品總廢料成本
+                            </div>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="card-title">Rework Cost Trend</div>
+                        <div class="chart-container">
+                            <div class="test-chart">
+                                Quality 圖表 2:<br/>
+                                返工成本趨勢
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="dashboard-column">
+                    <div class="kpi-card">
+                        <div class="card-title">Scrap Cost Trend</div>
+                        <div class="chart-container">
+                            <div class="test-chart">
+                                Quality 圖表 3:<br/>
+                                廢料成本趨勢
+                            </div>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="card-title">Rework Quantity % Trend</div>
+                        <div class="chart-container">
+                            <div class="test-chart">
+                                Quality 圖表 4:<br/>
+                                返工數量%趨勢
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="dashboard-column">
+                    <div class="kpi-card">
+                        <div class="card-title">Top MES Steps for Scrap</div>
+                        <div class="chart-container">
+                            <div class="test-chart">
+                                Quality 圖表 5:<br/>
+                                前十大廢料MES步驟
+                            </div>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="card-title">Top Rework MES Steps</div>
+                        <div class="chart-container">
+                            <div class="test-chart">
+                                Quality 圖表 6:<br/>
+                                前十大返工MES步驟
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // 響應式調試工具
+        function updateDebugInfo() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            
+            document.getElementById('width-display').textContent = width;
+            document.getElementById('height-display').textContent = height;
+            
+            let breakpoint = '';
+            let bgColor = '';
+            let layoutMode = '';
+            
+            if (width >= 1400) {
+                breakpoint = '超大螢幕 (≥1400px)';
+                bgColor = '#28a745';
+                layoutMode = '3欄位 (優化)';
+            } else if (width >= 1200) {
+                breakpoint = '大螢幕 (1200px-1399px)';
+                bgColor = '#17a2b8';
+                layoutMode = '3欄位';
+            } else if (width >= 992) {
+                breakpoint = '中大螢幕 (992px-1199px)';
+                bgColor = '#ffc107';
+                layoutMode = '單欄位 (堆疊)';
+            } else if (width >= 768) {
+                breakpoint = '中小螢幕 (768px-991px)';
+                bgColor = '#fd7e14';
+                layoutMode = '單欄位 (堆疊)';
+            } else if (width >= 480) {
+                breakpoint = '小螢幕 (480px-767px)';
+                bgColor = '#dc3545';
+                layoutMode = '單欄位 (緊湊)';
+            } else {
+                breakpoint = '超小螢幕 (≤479px)';
+                bgColor = '#6f42c1';
+                layoutMode = '單欄位 (超緊湊)';
+            }
+            
+            const indicator = document.getElementById('breakpoint-display');
+            indicator.style.backgroundColor = bgColor;
+            document.getElementById('screen-size').textContent = breakpoint;
+            document.getElementById('layout-mode').textContent = layoutMode;
+        }
+        
+        // 初始化
+        updateDebugInfo();
+        
+        // 監聽視窗大小變化
+        window.addEventListener('resize', updateDebugInfo);
+        window.addEventListener('orientationchange', () => {
+            setTimeout(updateDebugInfo, 500);
+        });
+        
+        // 模擬標籤切換
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', function() {
+                // 移除所有活動狀態
+                document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                
+                // 設置當前活動狀態
+                this.classList.add('active');
+                const tabId = this.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+        
+        // 響應式測試信息
+        console.log('響應式測試要點:');
+        console.log('1. 調整瀏覽器寬度到不同斷點');
+        console.log('2. 觀察佈局從3欄位→單欄位的變化');
+        console.log('3. 比較 "組織成本概覽" 和 "品質與流程" 的響應式行為');
+        console.log('4. 檢查圖表容器高度在不同螢幕下的調整');
+        console.log('5. 驗證所有圖表能在單頁面中完整顯示');
+    </script>
+</body>
+</html> 

@@ -6,7 +6,7 @@
         return;
     }
 
-    console.log("Org Costing script loaded. Waiting for dataReady to initialize.");
+    console.log("Org Costing script loaded. Waiting for enhancedDataReady to initialize.");
 
     // --- Module-level state ---
     let charts = { level1: null, level2: null, varianceTrend: null, level3: null, yieldTrend: null, scrapMes: null };
@@ -54,7 +54,7 @@
             document.addEventListener('globalFiltersChanged', updateAllOrgCharts);
             console.log("Org Costing: Initialization complete and event listener added.");
 
-            // If data is already ready, update charts immediately. Otherwise, wait for dataReady event.
+            // If data is already ready, update charts immediately. Otherwise, wait for enhancedDataReady event.
             if (isDataReady) {
                 console.log("Org Costing: Data is ready, updating charts now.");
                 updateAllOrgCharts();
@@ -275,22 +275,24 @@
         const { dateUtils } = window;
         const productsToFilter = forProducts || [];
         const customFilters = { ...window.globalFilters, selectedProducts: productsToFilter };
-        const productTrendData = dateUtils.getAggregatedData(customFilters, 'product', 'product');
-        const trend = productTrendData.trendData;
+        // Changed from 'product' to 'processArea' to match chart title "Yield Trend by Process Area"
+        const processAreaTrendData = dateUtils.getAggregatedData(customFilters, 'processArea', 'product');
+        const trend = processAreaTrendData.trendData;
 
         charts.yieldTrend.data.labels = trend.labels;
-        charts.yieldTrend.data.datasets = trend.groups.slice(0, 5).map((group) => {
+        charts.yieldTrend.data.datasets = trend.groups.slice(0, 5).map((group, index) => {
             const dataLength = trend.labels.length;
             let yieldData = new Array(dataLength).fill(0);
-            const baseYield = window.appData.configData.products.find(p => p.displayName === group.displayName)?.baseYield || 0.9;
+            // Use a base yield for process areas (simulate process area yield)
+            const baseYield = 0.9 - (index * 0.02); // Different base yields for different process areas
             const volatility = Math.random() * 0.05;
 
             for (let j = 0; j < dataLength; j++) {
                 yieldData[j] = (baseYield + (Math.random() - 0.5) * volatility) * 100;
             }
            
-            const color = window.chartUtils.getProductColor(group.displayName);
-            const pointStyle = fabPointStyles[group.fab] || 'circle';
+            const color = window.chartUtils.getProcessAreaColor(group.displayName) || window.chartUtils.chartColors.processAreaColors[index % window.chartUtils.chartColors.processAreaColors.length];
+            const pointStyle = 'circle';
             const randomLabelIndex = Math.floor(Math.random() * yieldData.length);
 
             return {
@@ -336,15 +338,7 @@
         if (window.ChartDataLabels) {
             Chart.register(window.ChartDataLabels);
         }
-        const createChart = (id, config) => {
-            const ctx = document.getElementById(id)?.getContext('2d');
-            if (!ctx) {
-                console.error("Could not find canvas with id:", id);
-                return null;
-            }
-            return new Chart(ctx, config);
-        };
-        const { formatNumber, chartColors } = window.chartUtils;
+        const { formatNumber, chartColors, createResponsiveChart } = window.chartUtils;
 
         const baseBarOptions = {
             responsive: true,
@@ -400,32 +394,32 @@
             scales: { y: { beginAtZero: false, ticks: { callback: (v) => formatNumber(v, 2) } } }
         };
 
-        charts.level1 = createChart('org-costing-level1', { 
+        charts.level1 = createResponsiveChart('org-costing-level1', { 
             type: 'bar',
             data: { labels: [], datasets: [{ label: 'Planned', data: [] }, { label: 'Actual', data: [] }] },
             options: { ...horizontalBarOptions, onClick: handleLevel1Click } 
         });
-        charts.level2 = createChart('org-costing-level2', { 
+        charts.level2 = createResponsiveChart('org-costing-level2', { 
             type: 'bar',
             data: { labels: [], datasets: [{ label: 'Variance', data: [] }] },
             options: { ...horizontalBarOptions, onClick: handleLevel2Click } 
         });
-        charts.varianceTrend = createChart('variance-trend-chart', {
+        charts.varianceTrend = createResponsiveChart('variance-trend-chart', {
             type: 'line',
             data: { labels: [], datasets: [] },
             options: trendChartOptions
         });
-        charts.level3 = createChart('org-costing-level3', { 
+        charts.level3 = createResponsiveChart('org-costing-level3', { 
             type: 'bar',
             data: { labels: [], datasets: [{ label: 'Variance', data: [] }] },
             options: horizontalBarOptions 
         });
-        charts.yieldTrend = createChart('yield-trend-chart', {
+        charts.yieldTrend = createResponsiveChart('yield-trend-chart', {
             type: 'line',
             data: { labels: [], datasets: [] },
             options: { ...trendChartOptions, scales: { ...trendChartOptions.scales, y: { ...trendChartOptions.scales.y, ticks: { callback: (v) => `${v.toFixed(2)}%` } } } }
         });
-        charts.scrapMes = createChart('scrap-mes-chart', {
+        charts.scrapMes = createResponsiveChart('scrap-mes-chart', {
             type: 'bar',
             data: { labels: [], datasets: [{ label: 'Scrap Cost', data: [] }] },
             options: horizontalBarOptions
@@ -433,8 +427,8 @@
     }
 
     // --- Event Listener ---
-    document.addEventListener('dataReady', () => {
-        console.log("Org Costing: dataReady event received.");
+    document.addEventListener('enhancedDataReady', () => {
+        console.log("Org Costing: enhancedDataReady event received.");
         isDataReady = true;
         // If the module has already been initialized, trigger an update.
         if (isInitialized) {

@@ -1,4 +1,4 @@
-document.addEventListener('dataReady', () => {
+document.addEventListener('enhancedDataReady', () => {
     const configTab = document.getElementById('configuration');
     if (!configTab) return;
 

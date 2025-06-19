@@ -4,9 +4,99 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PDF Operational Product Costing</title>
+    <link rel="preload" href="css/style.css" as="style">
     <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    <style>
+        /* Loading spinner styles */
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(240, 242, 245, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            backdrop-filter: blur(2px);
+        }
+        
+        .loading-content {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #ddd;
+            border-top: 4px solid #002B49;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        .loading-text {
+            margin-left: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: #002B49;
+            font-size: 16px;
+        }
+        
+        .loading-progress {
+            width: 300px;
+            height: 4px;
+            background-color: #ddd;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .loading-progress-bar {
+            height: 100%;
+            background-color: #002B49;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .loading-status {
+            margin-top: 10px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: #666;
+            font-size: 12px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Hide main content until loaded */
+        body.loading main {
+            opacity: 0;
+        }
+        
+        body.loaded main {
+            opacity: 1;
+            transition: opacity 0.3s ease-in;
+        }
+    </style>
 </head>
-<body>
+<body class="loading">
+    <!-- Loading Overlay -->
+    <div id="loading-overlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Loading Dashboard...</div>
+        </div>
+        <div class="loading-progress">
+            <div class="loading-progress-bar"></div>
+        </div>
+        <div class="loading-status">Initializing...</div>
+    </div>
     <header>
         <img src="assets/pdf-logo-2color-TM-transparent-small.webp" alt="PDF Solutions Logo">
         <h1>Operational Product Costing</h1>
@@ -245,40 +335,52 @@
         <!-- Organizational Costing Tab -->
         <div id="org-costing-overview" class="tab-content active">
             <div class="org-costing-container">
-                <div class="org-chart-container">
-                    <div class="costing-level" id="org-costing-level-1-wrapper">
-                        <div class="chart-header">
-                            <h2>Product Planned vs Actual Costs</h2>
-                        </div>
-                        <div id="level-1-container" class="level-container">
-                             <canvas id="org-costing-level1"></canvas>
-                        </div>
-                        <div id="level-1-pagination" class="pagination-controls">
-                            <!-- Paging controls will be inserted here by JS -->
-                        </div>
-                    </div>
-                    <div class="costing-level">
-                        <h2>Variance Costs by Process Area</h2>
-                        <div id="level-2-container" class="level-container">
-                            <canvas id="org-costing-level2"></canvas>
-                        </div>
-                        <h2 class="sub-chart-title">Variance Trend by Process Area</h2>
-                        <div class="level-container variance-trend-container">
-                            <canvas id="variance-trend-chart"></canvas>
-                        </div>
-                        <h2 class="sub-chart-title">Yield Trend by Process Area</h2>
-                        <div class="level-container variance-trend-container">
-                            <canvas id="yield-trend-chart"></canvas>
+                <div class="dashboard-column-container">
+                    <div class="dashboard-column">
+                        <div class="kpi-card">
+                            <div class="chart-header">
+                                <h2>Product Planned vs Actual Costs</h2>
+                                <div id="level-1-pagination" class="pagination-controls">
+                                    <!-- Paging controls will be inserted here by JS -->
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="org-costing-level1"></canvas>
+                            </div>
                         </div>
                     </div>
-                    <div class="costing-level">
-                        <h2>Variance by MES Step</h2>
-                        <div id="level-3-container" class="level-container">
-                            <canvas id="org-costing-level3"></canvas>
+                    <div class="dashboard-column">
+                        <div class="kpi-card">
+                            <h2>Variance Costs by Process Area</h2>
+                            <div class="chart-container">
+                                <canvas id="org-costing-level2"></canvas>
+                            </div>
                         </div>
-                        <h2 class="sub-chart-title">Top 10 Scrap MES Operational Steps</h2>
-                        <div class="level-container">
-                            <canvas id="scrap-mes-chart"></canvas>
+                        <div class="kpi-card">
+                            <h2>Variance Trend by Process Area</h2>
+                            <div class="chart-container">
+                                <canvas id="variance-trend-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dashboard-column">
+                        <div class="kpi-card">
+                            <h2>Variance by MES Step</h2>
+                            <div class="chart-container">
+                                <canvas id="org-costing-level3"></canvas>
+                            </div>
+                        </div>
+                        <div class="kpi-card">
+                            <h2>Yield Trend by Process Area</h2>
+                            <div class="chart-container">
+                                <canvas id="yield-trend-chart"></canvas>
+                            </div>
+                        </div>
+                        <div class="kpi-card">
+                            <h2>Top 10 Scrap MES Operational Steps</h2>
+                            <div class="chart-container">
+                                <canvas id="scrap-mes-chart"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -313,26 +415,71 @@
         </div>
     </main>
     <!-- Chart.js and plugins -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" async></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0" async></script>
     
     <!-- Core Application Logic -->
     
-    <!-- Dashboard & Utility Scripts -->
-    <script src="js/new_costing_data.js"></script>
-    <script src="js/chart-utils.js"></script>
-    <script src="js/date-utils.js"></script>
-    <script src="js/data-source.js"></script>
-    <script src="js/data-generators.js"></script>
-    <script src="js/data.js"></script>
-    <script src="js/global-filters.js"></script>
+    <!-- Critical Scripts (load first) -->
     <script src="js/main.js"></script>
-    <script src="js/charts.js"></script>
-    <script src="js/manufacturing-dashboard.js"></script>
-    <script src="js/quality-dashboard.js"></script>
-    <script src="js/material-analysis.js"></script>
-    <script src="js/cost-category-analysis.js"></script>
-    <script src="js/org-costing.js"></script>
-    <script src="js/cost-configuration.js"></script>
+    <script src="js/data.js"></script>
+    
+    <!-- Dashboard & Utility Scripts (load asynchronously) -->
+    <script src="js/new_costing_data.js" defer onload="window.loadingSteps && window.loadingSteps.scriptsLoaded++ && window.updateLoadingProgress && window.updateLoadingProgress()"></script>
+    <script src="js/chart-utils.js" defer onload="window.loadingSteps && window.loadingSteps.scriptsLoaded++ && window.updateLoadingProgress && window.updateLoadingProgress()"></script>
+    <script src="js/date-utils.js" defer onload="window.loadingSteps && window.loadingSteps.scriptsLoaded++ && window.updateLoadingProgress && window.updateLoadingProgress()"></script>
+    <script src="js/data-source.js" defer onload="window.loadingSteps && window.loadingSteps.scriptsLoaded++ && window.updateLoadingProgress && window.updateLoadingProgress()"></script>
+    <script src="js/data-generators.js" defer onload="window.loadingSteps && window.loadingSteps.scriptsLoaded++ && window.updateLoadingProgress && window.updateLoadingProgress()"></script>
+    <script src="js/global-filters.js" defer onload="window.loadingSteps && window.loadingSteps.scriptsLoaded++ && window.updateLoadingProgress && window.updateLoadingProgress()"></script>
+    <script src="js/charts.js" defer onload="window.loadingSteps && window.loadingSteps.scriptsLoaded++ && window.updateLoadingProgress && window.updateLoadingProgress()"></script>
+    <script src="js/manufacturing-dashboard.js" defer onload="window.loadingSteps && window.loadingSteps.scriptsLoaded++ && window.updateLoadingProgress && window.updateLoadingProgress()"></script>
+    <script src="js/quality-dashboard.js" defer onload="window.loadingSteps && window.loadingSteps.scriptsLoaded++ && window.updateLoadingProgress && window.updateLoadingProgress()"></script>
+    <script src="js/material-analysis.js" defer onload="window.loadingSteps && window.loadingSteps.scriptsLoaded++ && window.updateLoadingProgress && window.updateLoadingProgress()"></script>
+    <script src="js/cost-category-analysis.js" defer onload="window.loadingSteps && window.loadingSteps.scriptsLoaded++ && window.updateLoadingProgress && window.updateLoadingProgress()"></script>
+    <script src="js/org-costing.js" defer onload="window.loadingSteps && window.loadingSteps.scriptsLoaded++ && window.updateLoadingProgress && window.updateLoadingProgress()"></script>
+    <script src="js/cost-configuration.js" defer onload="window.loadingSteps && window.loadingSteps.scriptsLoaded++ && window.updateLoadingProgress && window.updateLoadingProgress()"></script>
+    <script>
+        // Performance monitoring
+        window.performanceStart = performance.now();
+        window.loadingSteps = {
+            domReady: false,
+            cssLoaded: false,
+            scriptsLoaded: 0,
+            totalScripts: 15,
+            chartsReady: false,
+            dataReady: false
+        };
+        
+        function updateLoadingProgress() {
+            const steps = window.loadingSteps;
+            const progressBar = document.querySelector('.loading-progress-bar');
+            const statusText = document.querySelector('.loading-status');
+            
+            if (!progressBar || !statusText) return;
+            
+            let progress = 0;
+            let status = 'Initializing...';
+            
+            if (steps.domReady) progress += 10;
+            if (steps.cssLoaded) progress += 15;
+            progress += (steps.scriptsLoaded / steps.totalScripts) * 50;
+            if (steps.chartsReady) progress += 15;
+            if (steps.dataReady) progress += 10;
+            
+            if (progress < 25) status = 'Loading resources...';
+            else if (progress < 50) status = 'Loading scripts...';
+            else if (progress < 75) status = 'Preparing charts...';
+            else if (progress < 90) status = 'Loading data...';
+            else status = 'Almost ready...';
+            
+            progressBar.style.width = progress + '%';
+            statusText.textContent = status;
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            window.loadingSteps.domReady = true;
+            updateLoadingProgress();
+        });
+    </script>
 </body>
 </html> 
