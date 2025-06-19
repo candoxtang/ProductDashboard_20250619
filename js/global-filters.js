@@ -111,8 +111,18 @@ document.addEventListener('dataReady', () => {
     // --- EVENT LISTENERS & DISPATCHERS ---
     aggregationSelect.addEventListener('change', (e) => {
         window.globalFilters.aggregationLevel = e.target.value;
+        updateTimeRangeDisplay();
         dispatchFilterChange();
     });
+
+    function updateTimeRangeDisplay() {
+        const timeRangeElement = document.getElementById('time-range-display');
+        if (timeRangeElement && window.dateUtils) {
+            const aggregationLevel = window.globalFilters.aggregationLevel;
+            const displayText = window.dateUtils.formatTimeRangeDisplay(aggregationLevel);
+            timeRangeElement.textContent = displayText;
+        }
+    }
 
     function dispatchFilterChange() {
         console.log('Global filters changed:', window.globalFilters);
@@ -176,6 +186,9 @@ document.addEventListener('dataReady', () => {
         
         // Set initial state from the dropdown
         window.globalFilters.aggregationLevel = aggregationSelect.value;
+        
+        // Update time range display with initial value
+        updateTimeRangeDisplay();
         
         // IMPORTANT: Manually trigger the first `rebuild` for all filters.
         // The `onChange` within the rebuild will set the initial state.

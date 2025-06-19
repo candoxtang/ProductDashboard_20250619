@@ -152,6 +152,48 @@ window.dateUtils = (function() {
     }
 
     /**
+     * Formats time range for display in the UI
+     * @param {string} aggregationLevel 'Day', 'Week', 'Month', 'Quarter', 'Year'
+     * @returns {string} Formatted time range string
+     */
+    function formatTimeRangeDisplay(aggregationLevel) {
+        const { startDate, endDate } = getBarChartDateRange(aggregationLevel);
+        const today = new Date();
+        
+        const formatDate = (date) => {
+            return date.toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric',
+                year: startDate.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
+            });
+        };
+
+        const formatMonth = (date) => {
+            return date.toLocaleDateString('en-US', { 
+                month: 'long',
+                year: date.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
+            });
+        };
+
+        switch (aggregationLevel) {
+            case 'Day':
+                return formatDate(startDate);
+            case 'Week':
+                return `${formatDate(startDate)} - ${formatDate(endDate)}`;
+            case 'Month':
+                return formatMonth(startDate);
+            case 'Quarter':
+                const quarter = Math.floor(startDate.getMonth() / 3) + 1;
+                const yearSuffix = startDate.getFullYear() !== today.getFullYear() ? ` ${startDate.getFullYear()}` : '';
+                return `Q${quarter}${yearSuffix}`;
+            case 'Year':
+                return `${startDate.getFullYear()}`;
+            default:
+                return formatMonth(startDate);
+        }
+    }
+
+    /**
      * Calculates the date range for the last complete time period, for use in bar charts.
      * @param {string} aggregationLevel 'Day', 'Week', 'Month', 'Quarter', 'Year'
      * @returns {{startDate: Date, endDate: Date}}
@@ -186,11 +228,13 @@ window.dateUtils = (function() {
                 break;
             case 'Day':
             default:
-                // Today's data - use a range that ensures we capture today's data
-                startDate = new Date(today);
-                startDate.setHours(0, 0, 0, 0); // Start of today
-                endDate = new Date(today);
-                endDate.setHours(23, 59, 59, 999); // End of today
+                // Yesterday's data (most recent complete day with data)
+                const yesterday = new Date(today);
+                yesterday.setDate(today.getDate() - 1);
+                startDate = new Date(yesterday);
+                startDate.setHours(0, 0, 0, 0); // Start of yesterday
+                endDate = new Date(yesterday);
+                endDate.setHours(23, 59, 59, 999); // End of yesterday
                 break;
         }
         return { startDate, endDate };
@@ -626,6 +670,7 @@ window.dateUtils = (function() {
         getPeriodKeyFunction,
         getTrendDateRange,
         getBarChartDateRange,
+        formatTimeRangeDisplay,
         formatDateLabel,
         getAggregatedData,
         getBarChartData,
