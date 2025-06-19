@@ -163,31 +163,34 @@ window.dateUtils = (function() {
 
         switch (aggregationLevel) {
             case 'Year':
-                startDate = new Date(today.getFullYear() - 1, 0, 1);
-                endDate = new Date(today.getFullYear() - 1, 11, 31);
+                // Current year from January 1st to today
+                startDate = new Date(today.getFullYear(), 0, 1);
+                endDate = new Date(today);
                 break;
             case 'Quarter':
+                // Current quarter from first day to today
                 const currentQuarter = Math.floor(today.getMonth() / 3);
-                startDate = new Date(today.getFullYear(), currentQuarter * 3 - 3, 1);
-                endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 3, 0);
+                startDate = new Date(today.getFullYear(), currentQuarter * 3, 1);
+                endDate = new Date(today);
                 break;
             case 'Month':
-                startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-                endDate = new Date(today.getFullYear(), today.getMonth(), 0);
+                // Current month from first day to today
+                startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+                endDate = new Date(today);
                 break;
             case 'Week':
+                // Current week from Sunday to today
+                startDate = new Date(today);
+                startDate.setDate(today.getDate() - today.getDay()); // This Sunday
                 endDate = new Date(today);
-                endDate.setDate(today.getDate() - today.getDay() - 1); // Last Saturday
-                startDate = new Date(endDate);
-                startDate.setDate(endDate.getDate() - 6); // Previous Sunday
                 break;
             case 'Day':
             default:
-                // For Day view, show data from the past 3 days for a shorter time range than Week
+                // Today only (or until yesterday to avoid incomplete data)
                 startDate = new Date(today);
-                startDate.setDate(today.getDate() - 3); // Past 3 days
+                startDate.setDate(today.getDate() - 1); // Yesterday
                 endDate = new Date(today);
-                endDate.setDate(today.getDate() - 1); // Until yesterday
+                endDate.setDate(today.getDate() - 1); // Yesterday
                 break;
         }
         return { startDate, endDate };
