@@ -1,0 +1,19 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Startup and Data Flow
+
+This application uses an event-driven model to manage asynchronous data initialization and prevent race conditions.
+
+## Sequence of Events
+
+1.  **HTML Load**: The browser loads [`index.html`](mdc:index.html), which includes all necessary JavaScript files.
+2.  **DOM Ready**: The `DOMContentLoaded` event fires.
+3.  **Data Generation**: An event listener in [`js/data-source.js`](mdc:js/data-source.js) triggers the `initializeDataSource` function. This function generates all the application's mock data and populates the `window.appData` object.
+4.  **Data Ready Event**: Once data generation is complete, [`js/data-source.js`](mdc:js/data-source.js) dispatches a custom event named `dataReady` on the `document` object.
+5.  **Chart Initialization**: All dashboard-specific scripts (e.g., [`js/charts.js`](mdc:js/charts.js), [`js/org-costing.js`](mdc:js/org-costing.js)) have an event listener that waits for the `dataReady` event.
+6.  **Render**: Once the `dataReady` event is received, these scripts access the data from `window.appData` and render their respective charts.
+
+This approach ensures that no chart rendering or data processing is attempted before all data is available, which is critical for the stability of the dashboard.

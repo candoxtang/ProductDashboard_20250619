@@ -1,0 +1,89 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Layout and Styling Golden Rules
+
+This document outlines the core principles for the dashboard's layout to ensure a consistent, space-efficient, and maintainable user interface.
+
+## 1. Main Layout Structure (The "Holy Trinity")
+
+The application's primary layout is a three-part flexbox structure that must be maintained:
+
+1.  **`body`**: The root container, configured as a `flex-direction: column` that fills 100% of the viewport height (`100vh`) and has `overflow: hidden`. This is the foundation that prevents page-level scrollbars.
+2.  **`<header>`, `<nav>`, `#global-filter-bar`**: These are the "fixed" top elements. They should have `flex-shrink: 0` to prevent them from collapsing.
+3.  **`<main>`**: This is the primary content area. It must have `flex-grow: 1` to fill all remaining vertical space and `overflow: hidden` to contain its children. It acts as the positioning context (`position: relative`) for all tab content.
+
+## 2. Tab Content: Fill the Space
+
+-   Every active tab (`.tab-content.active`) must be a `flex` container (`display: flex`, `flex-direction: column`).
+-   It must be absolutely positioned to fill the entire `<main>` area (`position: absolute`, `top: 0`, `left: 0`, `right: 0`, `bottom: 0`). This ensures only one tab is visible and that it takes all available space.
+
+## 3. Component Layout: Flexbox is King
+
+-   **Use Flexbox for Sizing**: All components, especially chart cards and containers, should use flexbox for sizing and alignment. Use `flex-grow: 1` on child elements that should expand to fill space.
+-   **`min-height: 0` is Your Friend**: When nesting flex containers (e.g., a flex chart container inside a flex card), the inner container needs `min-height: 0` to allow it to shrink properly and not overflow its parent.
+-   **No Fixed Heights**: Avoid setting fixed pixel heights on components (e.g., `height: 400px`). Let flexbox determine the height based on available space. This is critical for responsiveness and preventing overflow.
+
+## 4. Spacing: Borders, Not Margins
+
+-   **Use Borders for Gutters**: For grids of charts (like on the Manufacturing and Quality pages), use `border-right` and `border-bottom` on the cards themselves to create consistent 1px gutters. Do not use `margin` or `gap`, as this makes it difficult to manage overflow and achieve a pixel-perfect edge-to-edge layout.
+-   **Use Padding for Internal Space**: Use `padding` inside components (like `.chart-container`) to create space around the content (e.g., the `<canvas>` element).
+-   **Remove Final Borders**: Use `:last-child` selectors to remove the `border-right` and `border-bottom` from the last elements in a row/column to prevent a "double border" effect at the edges of the grid.
+
+## Example: A Perfect Chart Card
+
+A component that adheres to these rules will look like this:
+
+```css
+/* The parent container is a flexbox row/column */
+.kpi-card {
+    display: flex;          /* It's a flex container itself */
+    flex-direction: column; /* Stacks its title and chart vertically */
+    flex: 1 1 0;            /* Allows it to grow/shrink within its parent */
+    min-height: 0;          /* Allows it to shrink without overflowing */
+    overflow: hidden;       /* Safety net */
+    border-bottom: 1px solid #eee; /* Gutter */
+}
+
+.kpi-card h2 {
+    flex-shrink: 0; /* Title has a fixed height */
+}
+
+.chart-container {
+    flex-grow: 1;           /* Chart area fills the remaining space */
+    min-height: 0;          /* Allows the canvas to resize correctly */
+    position: relative;     /* Required for Chart.js */
+}
+```
+
+## 5. Responsive Chart Rows
+
+To create horizontally responsive rows of charts (like on the Quality or Manufacturing pages), follow this specific flexbox pattern. This ensures charts automatically wrap and take up equal space.
+
+-   **Row Container (`.quality-row-top`, `.mfg-grid-row`, etc.)**:
+    -   Must be a `display: flex` container.
+    -   Must have `flex-wrap: wrap` to allow cards to wrap onto the next line on smaller screens.
+-   **Card Sizing (`.card`, `.kpi-card`)**:
+    -   The `flex: 1 1 300px;` property is essential.
+        -   `flex-grow: 1`: Allows the card to grow to fill available space.
+        -   `flex-shrink: 1`: Allows the card to shrink if needed.
+        -   `flex-basis: 300px`: Sets a minimum preferred width. When the screen is too small to fit multiple cards at this width, they will wrap.
+-   **Height Consistency**:
+    -   All cards in a flex row will naturally have the same height, creating a clean grid.
+
+### Example: A Perfect Responsive Row
+
+```css
+.quality-row-top {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.quality-row-top .card {
+  flex: 1 1 300px; /* Grow, shrink, with a base size of 300px */
+  /* Other card styles (display: flex, flex-direction: column, etc.) remain */
+}
+```

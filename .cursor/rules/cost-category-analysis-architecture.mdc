@@ -1,0 +1,157 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Cost Category Analysis Architecture
+
+The Cost Category Analysis page is a comprehensive manufacturing data analysis interface that provides drill-down capabilities from high-level cost analysis to detailed lot manufacturing data.
+
+## Core Components
+
+### 1. Main Analysis Charts
+- **Plan vs Actual Cost Chart** (`ccaPlannedVsActualChart`): Displays cost comparison by selected analysis dimension
+- **MES Operation Variance Chart** (`ccaMesVarianceChart`): Shows detailed variance breakdown for selected items
+- Both charts support pagination and multi-selection with Ctrl+click
+
+### 2. Manufacturing Lot Grid
+- **Comprehensive Data Grid**: Displays thousands of lot records with detailed manufacturing metrics
+- **Real-time Filtering**: Filters based on chart selections and global filters
+- **Advanced Sorting**: Supports sorting by any column with visual indicators
+- **Pagination**: 25 records per page with smart navigation
+
+### 3. Dynamic Analysis Modes
+The page supports four analysis dimensions via the "Analyze by" dropdown:
+- **Product**: Groups by product/fab combinations
+- **Lot**: Individual lot-level analysis
+- **Stage**: Manufacturing stage groupings (FEOL, BEOL, Test, Assembly)
+- **Process Area**: Equipment/process area groupings
+
+## Data Architecture
+
+### Data Generation Pipeline
+1. **[data-source.js](mdc:js/data-source.js)** → Generates daily cost summaries and base data
+2. **[data-generators.js](mdc:js/data-generators.js)** → Creates MES and lot-level data
+3. **[data.js](mdc:js/data.js)** → Orchestrates enhancement and dispatches `enhancedDataReady`
+
+### Key Data Structures
+
+#### Lot Data Structure (generated in `generateLotData`)
+```javascript
+{
+    sapOrder: number,           // SAP order number (1000000+)
+    lotId: string,             // Format: "DEMOLOTXXXXX"
+    completedTime: string,     // ISO timestamp
+    status: string,            // "Completed" | "Processing"
+    product: string,           // "Product Name (Fab X)"
+    fab: string,               // Fab identifier
+    technology: string,        // Technology node (65nm, 45nm, 28nm)
+    plannedQty: number,        // Planned quantity (typically 25)
+    completedQty: number,      // Actual completed quantity
+    scrapQty: number,          // Scrapped quantity
+    wipQty: number,            // Work in progress quantity
+    yield: number,             // Yield percentage
+    rework: string,            // "Y" | "N"
+    plannedCost: number,       // Technology-based planned cost
+    actualCost: number,        // Actual cost with variance
+    costVariance: number       // Cost variance (actual - planned)
+}
+```
+
+#### Technology-Based Cost Structure
+- **65nm**: ~$125K planned cost per lot
+- **45nm**: ~$250K planned cost per lot  
+- **28nm**: ~$65K planned cost per lot
+- **Variance Range**: -10% to +15% of planned cost
+
+### MES Data Structure (generated in `generateMesData`)
+```javascript
+{
+    lot_id: string,            // Lot identifier
+    product: string,           // Product with fab decoration
+    fab: string,               // Fab identifier
+    technology: string,        // Technology node
+    process_area: string,      // Process area name
+    stage: string,             // Manufacturing stage
+    mes_operation: string,     // MES operation name
+    plan_cost: number,         // Planned step cost
+    actual_cost: number,       // Actual step cost
+    timestamp: Date,           // Operation timestamp
+    variance: number,          // Cost variance
+    status: string             // "Complete" | "WIP"
+}
+```
+
+## UI Layout & Interactions
+
+### Filter Panel Integration
+- **Analyze by dropdown**: Moved to global filter panel, only visible on Cost Category Analysis page
+- **Dynamic visibility**: Controlled by tab switching logic in [main.js](mdc:js/main.js)
+- **Consistent styling**: Matches existing filter controls with proper alignment
+
+### Chart Interactions
+- **Multi-selection**: Ctrl+click to select/deselect chart items
+- **Visual feedback**: Selected items highlighted with border styling
+- **Auto-selection**: All items selected on initial load and page changes
+- **Grid integration**: Grid filters automatically based on chart selections
+
+### Grid Features
+- **Dynamic headers**: Shows filtering status (e.g., "Filtered by 3 selected products")
+- **Status indicators**: Color-coded status and variance values
+- **Sortable columns**: All columns support sorting with visual indicators
+- **Search functionality**: Real-time search across SAP Order, Lot ID, and Product
+
+## Event Flow & State Management
+
+### Initialization Sequence
+1. Page loads → `setupGrid()` called
+2. `enhancedDataReady` event → Grid data loaded, charts initialized
+3. User interactions → `updateVisuals()` → `updateGrid()` → UI updates
+
+### State Variables
+```javascript
+// Chart state
+let selectedDetailKeys = [];        // Currently selected chart items
+let currentAnalyzeBy = 'product';   // Current analysis dimension
+let isInitialLoad = true;           // Flag for initial selection
+
+// Grid state  
+let gridData = [];                  // Full lot dataset
+let filteredGridData = [];          // Filtered dataset
+let gridCurrentPage = 1;            // Current page number
+let gridSortField = 'completedTime'; // Sort field
+let gridSortDirection = 'desc';     // Sort direction
+```
+
+### Filter Logic Priority
+1. **Global filters**: Fab, Technology, Product selections
+2. **Chart selections**: Selected items in main chart (if any)
+3. **Grid filters**: Search term, status filter
+4. **Result**: Intersection of all active filters
+
+## Performance Considerations
+
+### Data Volume
+- **Lot records**: ~1,000-2,000 records per product configuration
+- **MES records**: ~50,000+ detailed operation records
+- **Grid pagination**: 25 records per page for optimal performance
+
+### Optimization Strategies
+- **Lazy loading**: Charts and grid only initialize when tab is active
+- **Event debouncing**: Filter updates batched to prevent excessive re-rendering
+- **Memory management**: Chart instances properly destroyed on tab switches
+
+## File Dependencies
+
+### Core Files
+- **[js/cost-category-analysis.js](mdc:js/cost-category-analysis.js)**: Main page logic and UI management
+- **[js/data-generators.js](mdc:js/data-generators.js)**: Lot and MES data generation
+- **[js/data.js](mdc:js/data.js)**: Data enhancement orchestration
+
+### Shared Dependencies
+- **[js/chart-utils.js](mdc:js/chart-utils.js)**: Chart styling and formatting utilities
+- **[js/date-utils.js](mdc:js/date-utils.js)**: Data aggregation and date handling
+- **[js/global-filters.js](mdc:js/global-filters.js)**: Global filter state management
+
+### CSS Styling
+- **[css/style.css](mdc:css/style.css)**: Grid styling, chart containers, filter panel integration

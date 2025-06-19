@@ -1,0 +1,193 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# UI Optimization Patterns
+
+This document outlines patterns for optimizing UI density and maximizing screen real estate to show more data without scrolling.
+
+## Grid Optimization Principles
+
+### 1. Compact Row Heights
+Reduce padding and font sizes to show more rows on screen without sacrificing readability.
+
+**Grid Table Optimization:**
+```css
+#lot-grid {
+    font-size: 0.75rem; /* Reduced from 0.85rem */
+}
+
+#lot-grid th {
+    padding: 0.25rem 0.4rem; /* Reduced from 0.75rem 0.5rem */
+    font-size: 0.75rem;
+}
+
+#lot-grid td {
+    padding: 0.25rem 0.4rem; /* Reduced from 0.5rem */
+    font-size: 0.75rem;
+}
+```
+
+### 2. Consistent Header Heights
+Ensure headers and footers have matching heights for visual consistency.
+
+**Header-Footer Alignment:**
+```css
+.grid-header {
+    padding: 0.4rem 1rem;
+}
+
+.grid-pagination {
+    padding: 0.4rem 1rem; /* Match header height */
+}
+```
+
+### 3. Compact Pagination Controls
+Reduce pagination control sizes to minimize footer height.
+
+**Optimized Pagination:**
+```css
+.pagination-info {
+    font-size: 0.75rem; /* Reduced from 0.9rem */
+}
+
+#grid-pagination-controls button {
+    padding: 0.25rem 0.5rem; /* Reduced from 0.5rem 0.75rem */
+    font-size: 0.75rem; /* Reduced from 0.85rem */
+    margin: 0 1px; /* Reduced from 0 2px */
+}
+
+.view-selector label {
+    font-size: 0.75rem;
+    margin-right: 6px; /* Reduced from 10px */
+}
+
+.view-selector select {
+    padding: 0.25rem 0.5rem; /* Reduced from 8px 12px */
+    font-size: 0.75rem; /* Reduced from 1rem */
+}
+```
+
+## Space Efficiency Guidelines
+
+### 1. Minimum Readable Font Sizes
+- **Grid data**: 0.75rem (12px) minimum
+- **Headers**: 0.75rem with bold weight
+- **Controls**: 0.75rem for consistency
+- **Labels**: 0.75rem for uniformity
+
+### 2. Padding Reduction Strategy
+- **Cells**: 0.25rem vertical, 0.4rem horizontal
+- **Headers**: Match cell padding for consistency
+- **Controls**: 0.25rem vertical, 0.5rem horizontal
+
+### 3. Margin Optimization
+- **Button spacing**: 1px between elements
+- **Label spacing**: 6px maximum
+- **Control gaps**: 0.5rem standard
+
+## Responsive Density Patterns
+
+### 1. Adaptive Font Scaling
+```css
+/* Base sizes for standard screens */
+.grid-text { font-size: 0.75rem; }
+
+/* Larger screens can handle slightly larger text */
+@media (min-width: 1400px) {
+    .grid-text { font-size: 0.8rem; }
+}
+
+/* Smaller screens need more compact text */
+@media (max-width: 768px) {
+    .grid-text { font-size: 0.7rem; }
+}
+```
+
+### 2. Progressive Disclosure
+Show more data on larger screens, less on smaller screens.
+
+```css
+/* Hide less critical columns on smaller screens */
+@media (max-width: 992px) {
+    .grid-optional-column { display: none; }
+}
+```
+
+## Visual Hierarchy Maintenance
+
+### 1. Preserve Readability
+Despite size reductions, maintain clear visual hierarchy:
+- Bold headers for scanning
+- Adequate contrast ratios
+- Consistent spacing patterns
+
+### 2. Interactive Element Sizing
+Ensure touch targets remain usable:
+- Minimum 28px height for buttons
+- Adequate spacing between clickable elements
+- Clear hover states
+
+## Implementation Examples
+
+### Cost Category Analysis Grid
+The lot grid in [js/cost-category-analysis.js](mdc:js/cost-category-analysis.js) demonstrates optimal density:
+- 0.75rem font size throughout
+- 0.25rem cell padding
+- Matching header/footer heights
+- Compact pagination controls
+
+### CSS Implementation
+See [css/style.css](mdc:css/style.css) for the complete implementation:
+- Lines 604-731: Grid styling optimization
+- Lines 682-733: Pagination optimization
+
+## Performance Considerations
+
+### 1. Render Performance
+Smaller elements render faster:
+- Reduced paint areas
+- Less layout thrashing
+- Improved scroll performance
+
+### 2. Memory Efficiency
+Compact layouts use less memory:
+- Smaller DOM elements
+- Reduced style calculations
+- Better caching efficiency
+
+## Testing Guidelines
+
+### 1. Readability Testing
+- Test at various zoom levels (90%, 100%, 110%)
+- Verify on different screen sizes
+- Check contrast ratios
+
+### 2. Usability Testing
+- Ensure clickable elements remain accessible
+- Test with different input methods (mouse, touch, keyboard)
+- Verify scrolling behavior
+
+### 3. Data Density Validation
+- Count visible rows before/after optimization
+- Measure time to find specific data
+- Test with realistic data volumes
+
+## Maintenance Patterns
+
+### 1. Consistent Sizing Variables
+Use CSS custom properties for consistent sizing:
+```css
+:root {
+    --grid-font-size: 0.75rem;
+    --grid-padding: 0.25rem 0.4rem;
+    --control-padding: 0.25rem 0.5rem;
+}
+```
+
+### 2. Component Standardization
+Apply consistent patterns across all grids and tables in the application.
+
+### 3. Regular Density Audits
+Periodically review UI density to ensure optimal use of screen space without compromising usability.

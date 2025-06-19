@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Operational Product Costing</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <img src="assets/pdf-logo-2color-TM-transparent-small.webp" alt="PDF Solutions Logo">
+        <h1>Operational Product Costing</h1>
+    </header>
+    <nav>
+        <button class="tab-button" data-tab="org-costing-overview">Organizational Costing Overview</button>
+        <button class="tab-button" data-tab="manufacturing">Manufacturing & Production</button>
+        <button class="tab-button" data-tab="quality">Quality & Process</button>
+        <button class="tab-button" data-tab="material-analysis">Material Analysis</button>
+        <button class="tab-button" data-tab="cost-category-analysis">Cost Category Analysis</button>
+        <button class="tab-button" data-tab="configuration">Actual Cost Config</button>
+    </nav>
+    <div id="global-filter-bar" class="filter-bar">
+        <div id="global-filter-container">
+            <!-- Global filters will be dynamically inserted here -->
+        </div>
+        <div class="filter-group-right">
+            <div id="analyze-by-group" class="filter-group" style="display: none;">
+                <label for="category-select">Analyze by:</label>
+                <select id="category-select">
+                    <option value="product">Product</option>
+                    <option value="lot">Lot</option>
+                    <option value="stage">Stage</option>
+                    <option value="processArea">Process Area</option>
+                </select>
+            </div>
+            <label for="aggregation-select">View by:</label>
+            <select id="aggregation-select">
+                <option value="Day">Day</option>
+                <option value="Week">Week</option>
+                <option value="Month" selected>Month</option>
+                <option value="Quarter">Quarter</option>
+                <option value="Year">Year</option>
+            </select>
+        </div>
+    </div>
+    <main>
+        <!-- Manufacturing & Production Tab -->
+        <div id="manufacturing" class="tab-content">
+            <div class="dashboard-grid">
+                <div class="kpi-card">
+                    <h2>WIP Trend</h2>
+                    <div class="chart-container">
+                        <canvas id="manufacturingWipTrendChart"></canvas>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <h2>Process Time Variance</h2>
+                    <div class="chart-container">
+                        <canvas id="processTimeVarianceChart"></canvas>
+                    </div>
+                    <div id="process-time-pagination" class="pagination-controls"></div>
+                </div>
+                <div class="kpi-card">
+                    <h2>MES Step Cycle Time</h2>
+                    <div class="chart-container">
+                        <canvas id="mesTimeVarianceChart"></canvas>
+                    </div>
+                    <div id="mes-time-pagination" class="pagination-controls"></div>
+                </div>
+                <div class="kpi-card">
+                    <h2>Product Planned vs Actual Cost</h2>
+                    <div class="chart-container">
+                        <canvas id="mfgPlannedVsActualCostChart"></canvas>
+                    </div>
+                    <div id="mfg-planned-cost-pagination" class="pagination-controls"></div>
+                </div>
+                <div class="kpi-card">
+                    <h2>Variance Costs by Process Area</h2>
+                    <div class="chart-container">
+                        <canvas id="mfgVarianceByAreaChart"></canvas>
+                    </div>
+                    <div id="mfg-variance-area-pagination" class="pagination-controls"></div>
+                </div>
+                <div class="kpi-card">
+                    <h2>Yield Rate by Process Area</h2>
+                    <div class="chart-container">
+                        <canvas id="mfgYieldByAreaChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quality & Process Tab -->
+        <div id="quality" class="tab-content">
+            <div class="dashboard-column-container">
+                <div class="dashboard-column">
+                    <div class="kpi-card">
+                        <div class="card-title">Total Scrap Cost by Product</div>
+                        <div class="chart-container">
+                            <canvas id="totalScrapCostChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="card-title">Rework Cost Trend</div>
+                        <div class="chart-container">
+                            <canvas id="reworkCostTrendChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="dashboard-column">
+                    <div class="kpi-card">
+                        <div class="card-title">Scrap Cost Trend</div>
+                        <div class="chart-container">
+                            <canvas id="scrapCostTrendChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="card-title">Rework Quantity % Trend</div>
+                        <div class="chart-container">
+                            <canvas id="reworkPercentageTrendChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="dashboard-column">
+                    <div class="kpi-card">
+                        <div class="card-title">
+                            <span>Top MES Steps for Scrap</span>
+                            <div id="scrap-mes-pagination" class="pagination-controls"></div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="topScrapMesChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="card-title">Top Rework MES Steps</div>
+                        <div class="chart-container">
+                            <canvas id="topReworkMesChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Material Analysis Tab -->
+        <div id="material-analysis" class="tab-content">
+            <div class="dashboard-column-container">
+                <div class="dashboard-column-large">
+                    <div class="kpi-card">
+                        <h2>Material Family Costs</h2>
+                        <div class="chart-container">
+                            <canvas id="materialFamilyCostChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="dashboard-column">
+                    <div class="kpi-card">
+                        <h2>Top 10 Product Variance by Material</h2>
+                        <div class="chart-container">
+                            <canvas id="productMaterialVarianceChart"></canvas>
+                        </div>
+                        <div id="product-material-variance-pagination" class="pagination-controls"></div>
+                    </div>
+                    <div class="kpi-card">
+                        <h2>Top 10 MES Step Variance by Material</h2>
+                        <div class="chart-container">
+                            <canvas id="topMesMaterialVarianceChart"></canvas>
+                        </div>
+                        <div id="mes-material-variance-pagination" class="pagination-controls"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cost Category Analysis Tab -->
+        <div id="cost-category-analysis" class="tab-content">
+            <div class="category-analysis-container">
+                <div class="analysis-content-wrapper">
+                    <div id="analysis-charts-grid" class="charts-section">
+                        <div class="kpi-card">
+                            <h2 id="cca-chart-title">Plan vs Actual Cost</h2>
+                            <div class="chart-container-large">
+                                <canvas id="ccaPlannedVsActualChart"></canvas>
+                            </div>
+                            <div id="cca-pagination" class="pagination-controls"></div>
+                        </div>
+                        <div class="kpi-card">
+                            <h2 id="cca-detail-chart-title">MES Operation Variance</h2>
+                            <div class="chart-container-large">
+                                <canvas id="ccaMesVarianceChart"></canvas>
+                            </div>
+                            <div id="cca-detail-pagination" class="pagination-controls"></div>
+                        </div>
+                    </div>
+                    <div class="grid-section">
+                        <div class="grid-header">
+                            <h2>Lot Manufacturing Details</h2>
+                            <div class="grid-controls">
+                                <input type="text" id="lot-search" placeholder="Search lots..." />
+                                <select id="status-filter">
+                                    <option value="">All Status</option>
+                                    <option value="Completed">Completed</option>
+                                    <option value="Processing">Processing</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid-container">
+                            <table id="lot-grid">
+                                <thead>
+                                    <tr>
+                                        <th data-sort="sapOrder">SAP Order</th>
+                                        <th data-sort="lotId">MES Lot ID</th>
+                                        <th data-sort="completedTime">Completed Time</th>
+                                        <th data-sort="status">Status</th>
+                                        <th data-sort="product">Product</th>
+                                        <th data-sort="plannedQty">Plan Qty</th>
+                                        <th data-sort="completedQty">Comp Qty</th>
+                                        <th data-sort="scrapQty">Scrap Qty</th>
+                                        <th data-sort="wipQty">WIP Qty</th>
+                                        <th data-sort="yield">Yield %</th>
+                                        <th data-sort="rework">RW</th>
+                                        <th data-sort="plannedCost">Planned Cost</th>
+                                        <th data-sort="actualCost">Actual Cost</th>
+                                        <th data-sort="costVariance">Cost Variance</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="lot-grid-body">
+                                    <!-- Grid data will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="grid-pagination">
+                            <div class="pagination-info">
+                                <span id="grid-info">Showing 0-0 of 0 lots</span>
+                            </div>
+                            <div class="pagination-controls" id="grid-pagination-controls">
+                                <!-- Pagination controls will be added here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Organizational Costing Tab -->
+        <div id="org-costing-overview" class="tab-content active">
+            <div class="org-costing-container">
+                <div class="org-chart-container">
+                    <div class="costing-level" id="org-costing-level-1-wrapper">
+                        <div class="chart-header">
+                            <h2>Product Planned vs Actual Costs</h2>
+                        </div>
+                        <div id="level-1-container" class="level-container">
+                             <canvas id="org-costing-level1"></canvas>
+                        </div>
+                        <div id="level-1-pagination" class="pagination-controls">
+                            <!-- Paging controls will be inserted here by JS -->
+                        </div>
+                    </div>
+                    <div class="costing-level">
+                        <h2>Variance Costs by Process Area</h2>
+                        <div id="level-2-container" class="level-container">
+                            <canvas id="org-costing-level2"></canvas>
+                        </div>
+                        <h2 class="sub-chart-title">Variance Trend by Process Area</h2>
+                        <div class="level-container variance-trend-container">
+                            <canvas id="variance-trend-chart"></canvas>
+                        </div>
+                        <h2 class="sub-chart-title">Yield Trend by Process Area</h2>
+                        <div class="level-container variance-trend-container">
+                            <canvas id="yield-trend-chart"></canvas>
+                        </div>
+                    </div>
+                    <div class="costing-level">
+                        <h2>Variance by MES Step</h2>
+                        <div id="level-3-container" class="level-container">
+                            <canvas id="org-costing-level3"></canvas>
+                        </div>
+                        <h2 class="sub-chart-title">Top 10 Scrap MES Operational Steps</h2>
+                        <div class="level-container">
+                            <canvas id="scrap-mes-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Configuration Tab -->
+        <div id="configuration" class="tab-content">
+             <div class="config-container">
+                <div class="config-header">
+                    <h1>Cost Step Mapping Configuration</h1>
+                    <div class="config-controls">
+                        <button id="save-mapping">Save Mapping</button>
+                        <button id="load-mapping">Load Mapping</button>
+                    </div>
+                </div>
+                <div class="mapping-interface">
+                    <div class="op-column">
+                        <h2>MES Operations (Source)</h2>
+                        <div id="mes-steps" class="step-list">
+                            <!-- MES steps will be loaded here -->
+                        </div>
+                    </div>
+                    <div class="op-column">
+                        <h2>SAP Operations (Target)</h2>
+                        <div id="sap-steps" class="step-list-target">
+                            <!-- SAP step cards will be created here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <!-- Chart.js and plugins -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    
+    <!-- Core Application Logic -->
+    
+    <!-- Dashboard & Utility Scripts -->
+    <script src="js/new_costing_data.js"></script>
+    <script src="js/chart-utils.js"></script>
+    <script src="js/date-utils.js"></script>
+    <script src="js/data-source.js"></script>
+    <script src="js/data-generators.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/global-filters.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/manufacturing-dashboard.js"></script>
+    <script src="js/quality-dashboard.js"></script>
+    <script src="js/material-analysis.js"></script>
+    <script src="js/cost-category-analysis.js"></script>
+    <script src="js/org-costing.js"></script>
+    <script src="js/cost-configuration.js"></script>
+</body>
+</html> 

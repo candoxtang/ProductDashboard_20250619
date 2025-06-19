@@ -1,0 +1,241 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Master Architecture Guide
+
+This is the comprehensive master guide to the Product Costing Dashboard architecture, tying together all components, data flows, and development patterns.
+
+## Architecture Overview
+
+The Product Costing Dashboard is a sophisticated single-page application (SPA) that provides comprehensive manufacturing cost analysis across multiple dimensions. The architecture is built on three core pillars:
+
+1. **Event-Driven Data Management**: Ensures consistent state across all components
+2. **Modular Dashboard System**: Each tab is an independent module with shared utilities
+3. **Advanced Data Generation**: Realistic manufacturing data with mathematical consistency
+
+## Core Architecture Components
+
+### 1. Application Foundation
+- **Entry Point**: [index.html](mdc:index.html) - Main HTML structure and script loading
+- **Application Controller**: [main.js](mdc:js/main.js) - Tab management and application lifecycle
+- **Global Styling**: [css/style.css](mdc:css/style.css) - Unified design system with optimized grid layouts
+- **Event Handling**: Proper mouse event management to prevent cursor trapping (see [mouse-event-handling.mdc](mdc:.cursor/rules/mouse-event-handling.mdc))
+
+### 2. Data Architecture (Three-Tier System)
+
+#### Tier 1: Base Data Generation
+- **[data-source.js](mdc:js/data-source.js)**: Master data generator
+  - Product configurations with cost personalities
+  - Daily cost summaries with process area breakdown
+  - Base manufacturing metrics and trends
+  - Dispatches: `dataReady` event
+
+#### Tier 2: Enhanced Data Generation  
+- **[data-generators.js](mdc:js/data-generators.js)**: Specialized data creators
+  - `generateLotData()`: Manufacturing lot records with technology-based costs
+  - `generateMesData()`: Detailed MES operation data
+  - Mathematical consistency with daily summaries
+
+#### Tier 3: Data Orchestration
+- **[data.js](mdc:js/data.js)**: Enhancement coordinator
+  - Calls specialized generators
+  - Ensures data relationships
+  - Dispatches: `enhancedDataReady` event
+
+### 3. Dashboard Module System
+
+#### Manufacturing Analytics
+- **[manufacturing-dashboard.js](mdc:js/manufacturing-dashboard.js)**: Process-focused metrics
+- **[quality-dashboard.js](mdc:js/quality-dashboard.js)**: Quality and scrap analysis
+- **[material-analysis.js](mdc:js/material-analysis.js)**: Material family analysis
+
+#### Cost Analysis (Most Advanced)
+- **[cost-category-analysis.js](mdc:js/cost-category-analysis.js)**: Multi-dimensional cost analysis
+  - Four analysis modes: Product, Lot, Stage, Process Area
+  - Interactive charts with multi-selection and proper Chart.js event handling
+  - Advanced data grid with thousands of records and optimized density (0.75rem fonts)
+  - Real-time filtering and sorting with compact pagination controls
+- **[org-costing.js](mdc:js/org-costing.js)**: Organizational cost hierarchies
+
+### 4. Shared Infrastructure
+- **[global-filters.js](mdc:js/global-filters.js)**: Unified filter state management (fixed duplicate event listeners)
+- **[chart-utils.js](mdc:js/chart-utils.js)**: Chart styling and formatting utilities
+- **[date-utils.js](mdc:js/date-utils.js)**: Data aggregation and date manipulation
+- **[cost-configuration.js](mdc:js/cost-configuration.js)**: Drag-and-drop interface with proper event cleanup
+
+## Data Relationship Map
+
+### Primary Data Entities
+```
+Product Configuration (PRODUCTS array)
+├── Daily Cost Summary (by date, product, fab, technology)
+│   ├── Process Area Breakdown
+│   │   └── MES Step Breakdown
+│   └── Total Cost Metrics
+├── Manufacturing Lots (generated per product)
+│   ├── Technology-Based Costs ($125K/65nm, $250K/45nm, $65K/28nm)
+│   ├── Quantity and Yield Metrics
+│   └── Completion Status and Timing
+└── MES Operations (detailed manufacturing steps)
+    ├── Step-Level Cost Breakdown
+    ├── Process Area Classification
+    └── Manufacturing Stage Grouping (FEOL, BEOL, Test, Assembly)
+```
+
+### Mathematical Consistency Rules
+1. **Lot costs aggregate to daily summary totals**
+2. **MES operation costs sum to lot totals**
+3. **Technology-based costs follow standard multipliers**
+4. **Process area variances match step-level variances**
+
+## Event-Driven Architecture
+
+### Event Flow Sequence
+```
+Page Load
+    ↓
+DOMContentLoaded → initializeDataSource()
+    ↓
+Base data generation complete → dataReady event
+    ↓
+Dashboard modules initialize charts
+    ↓
+Enhanced data generation → enhancedDataReady event
+    ↓
+Advanced features (grids, detailed analysis) activate
+    ↓
+User interactions → globalFiltersChanged event
+    ↓
+All modules update charts and UI
+```
+
+### Event Handling Pattern
+Every dashboard module follows this pattern:
+```javascript
+let isDataReady = false;
+let isEnhancedDataReady = false;
+
+document.addEventListener('dataReady', function(event) {
+    isDataReady = true;
+    if (currentTab === 'module-tab') {
+        initializeBasicCharts();
+    }
+});
+
+document.addEventListener('enhancedDataReady', function(event) {
+    isEnhancedDataReady = true;
+    if (currentTab === 'module-tab') {
+        initializeAdvancedFeatures();
+    }
+});
+
+document.addEventListener('globalFiltersChanged', function(event) {
+    if (isDataReady && currentTab === 'module-tab') {
+        applyFiltersAndRedraw();
+    }
+});
+```
+
+## UI Architecture Patterns
+
+### Layout System Hierarchy
+1. **Grid-Based Dashboards**: 3x2 grid for uniform chart comparison (Manufacturing, Quality)
+2. **Column-Based Layouts**: Flexible columns for hierarchical data (Material Analysis)
+3. **Split-Screen Layouts**: Charts above, data grid below (Cost Category Analysis)
+
+### Component Standardization
+- **KPI Cards**: Consistent structure with title, chart container, pagination
+- **Filter Panels**: Multi-select dropdowns with unified styling
+- **Data Grids**: Sortable columns, pagination, real-time search
+- **Charts**: Chart.js with responsive configuration and consistent formatting
+
+### Responsive Design Strategy
+- **Breakpoints**: 768px (mobile), 992px (tablet)
+- **Flex Principles**: `flex: 1; min-height: 0;` for proper resizing
+- **Grid Adaptation**: Single column on mobile, reduced columns on tablet
+
+## Advanced Features Showcase: Cost Category Analysis
+
+### Multi-Dimensional Analysis Engine
+The Cost Category Analysis page represents the pinnacle of the application's capabilities:
+
+#### Analysis Dimensions
+- **Product**: Cost by product/fab combinations
+- **Lot**: Individual manufacturing lot analysis  
+- **Stage**: Manufacturing stage groupings (FEOL, BEOL, Test, Assembly)
+- **Process Area**: Equipment/process area analysis
+
+#### Interactive Features
+- **Multi-Selection Charts**: Ctrl+click for complex selections
+- **Dynamic Grid Filtering**: Chart selections filter the data grid
+- **Real-Time Search**: Instant filtering across SAP orders, lot IDs, products
+- **Advanced Sorting**: All columns with visual sort indicators
+
+#### Data Volume Management
+- **Lot Records**: 1,000-2,000 per product configuration
+- **MES Records**: 50,000+ detailed operation records
+- **Pagination**: 25 records per page for optimal performance
+- **Memory Optimization**: Efficient filtering and chart cleanup
+
+## Performance Architecture
+
+### Data Generation Optimization
+- **Staged Loading**: Basic data first, enhanced data second
+- **Consistent Lookups**: Daily summary used for lot cost consistency
+- **Realistic Variance**: Technology-based costs with controlled randomization
+
+### UI Performance Patterns
+- **Lazy Loading**: Charts initialize only when tab is active
+- **Debounced Updates**: Filter changes batched to prevent excessive re-rendering
+- **Memory Management**: Chart instances destroyed on tab switches
+- **Efficient Filtering**: Pre-filtered base data, multiple filter layers
+
+### Browser Compatibility
+- **Modern ES6+**: Arrow functions, const/let, template literals
+- **Chart.js Integration**: Responsive charts with consistent configuration
+- **Cross-Browser Testing**: Chrome, Firefox, Safari, Edge support
+
+## Development Workflow Integration
+
+### Code Organization Philosophy
+- **Single Responsibility**: Each file has a clear, focused purpose
+- **Event-Driven Decoupling**: Modules communicate through events, not direct calls
+- **Shared Utilities**: Common functions centralized in utility modules
+- **Consistent Naming**: Established patterns for functions and variables
+
+### Quality Assurance Patterns
+- **Data Validation**: Input validation and consistency checks
+- **Error Handling**: Graceful degradation with fallback options
+- **Performance Monitoring**: Timing and memory usage tracking
+- **Testing Strategies**: Data consistency tests and UI interaction validation
+
+## Future Architecture Considerations
+
+### Scalability Patterns
+- **Modular Expansion**: Easy addition of new dashboard modules
+- **Data Source Flexibility**: Architecture supports real data integration
+- **Filter System Extension**: Global filter system can accommodate new filter types
+- **Chart Library Migration**: Abstracted chart utilities support library changes
+
+### Enhancement Opportunities
+- **Real-Time Data**: WebSocket integration for live updates
+- **Advanced Analytics**: Machine learning integration for predictive analysis
+- **Export Capabilities**: PDF/Excel export with maintained formatting
+- **User Customization**: Saved filter states and custom dashboards
+
+## Related Documentation
+
+For detailed information on specific aspects of the architecture, refer to these specialized rules:
+
+- **[cost-category-analysis-architecture.mdc](mdc:.cursor/rules/cost-category-analysis-architecture.mdc)**: Detailed Cost Category Analysis implementation
+- **[data-relationships-map.mdc](mdc:.cursor/rules/data-relationships-map.mdc)**: Complete data structure and relationship documentation
+- **[ui-layout-patterns.mdc](mdc:.cursor/rules/ui-layout-patterns.mdc)**: UI patterns, CSS conventions, and responsive design
+- **[development-workflow.mdc](mdc:.cursor/rules/development-workflow.mdc)**: Development practices, debugging, and testing strategies
+- **[data-flow.mdc](mdc:.cursor/rules/data-flow.mdc)**: Event-driven architecture details
+- **[layout-rules.mdc](mdc:.cursor/rules/layout-rules.mdc)**: Specific layout implementation rules
+- **[mouse-event-handling.mdc](mdc:.cursor/rules/mouse-event-handling.mdc)**: Critical mouse event patterns to prevent cursor trapping
+- **[ui-optimization-patterns.mdc](mdc:.cursor/rules/ui-optimization-patterns.mdc)**: UI density optimization for maximum data visibility
+
+This master guide provides the architectural foundation for understanding, maintaining, and extending the Product Costing Dashboard application.

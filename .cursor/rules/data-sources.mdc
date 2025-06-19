@@ -1,0 +1,88 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Data Sources
+
+All data for this application is generated dynamically on the client-side. There is no backend or database.
+
+## Primary Data Generation
+The main data generation script is [`js/data-source.js`](mdc:js/data-source.js). It is responsible for:
+1.  Creating realistic mock data for all dashboards, including costs, yields, and WIP (Work-In-Progress) trends.
+2.  Storing all generated data in the global `window.appData` object.
+3.  Dispatching the `dataReady` event on the `document` once all data has been generated.
+
+## Static Data
+Some larger, static datasets are defined in [`js/new_costing_data.js`](mdc:js/new_costing_data.js). This file exports data structures like `semiconductorStepsData` and `sapComplexCosts` to the global scope, which are then used during the data generation process.
+
+## Data Flow
+It is critical to understand that scripts should **not** attempt to access data directly. Instead, they must wait for the `dataReady` event. See the `startup-data-flow.mdc` rule for a detailed explanation.
+
+## Data Model Diagram
+
+```mermaid
+graph TD;
+    subgraph "Browser"
+        A[index.html] --> B(js/data-source.js);
+    end
+
+    subgraph "Data Generation Logic"
+        B --> C{window.appData};
+        C --> D[productWipTrend];
+        C --> E[dailySummary];
+        C --> F[reworkData];
+        C --> G[dailyCostData];
+        C --> H[processAreaYieldData];
+        C --> I[completedLotsData];
+    end
+
+    subgraph "Dashboard Components"
+        J[quality-dashboard.js] --> C;
+        K[org-costing.js] --> C;
+        L[charts.js] --> C;
+        M[global-filters.js] --> C;
+    end
+
+    subgraph "Data Relationships"
+        D --"Informs"--> F;
+        E --"Aggregated From"--> G;
+        H --"Influences"--> E;
+        I --"Influences"--> E;
+    end
+
+    classDef data fill:#f9f,stroke:#333,stroke-width:2px;
+    class C,D,E,F,G,H,I data;
+
+    classDef logic fill:#ccf,stroke:#333,stroke-width:2px;
+    class B,J,K,L,M logic;
+```
+
+## Simulated Real-World Scenarios
+
+The data generation process in `js/data-source.js` is designed to create a rich, interconnected dataset that mimics real-world semiconductor manufacturing scenarios. This allows the dashboard to showcase realistic use cases for analysis.
+
+### Work-In-Progress (WIP) and Rework Relationship
+
+A key feature of the data simulation is the direct relationship between Work-In-Progress (WIP) and rework costs.
+
+-   **WIP Generation**: The `productWipTrend` object is generated first. It simulates daily WIP levels for each product over a three-year period. Each product has a baseline WIP level with a defined volatility, causing WIP to fluctuate realistically day-to-day.
+-   **Rework Generation**: The `reworkData` is generated *based on* the `productWipTrend` data. Instead of being random, rework is calculated as a percentage of the daily WIP for each product.
+    -   **Baseline Rework**: On average, rework is ~5% of the WIP.
+    -   **Variability**: This percentage fluctuates daily to simulate normal process variation.
+    -   **Spikes**: There is a small, random chance of a "rework spike" where the rework percentage significantly increases for a day, simulating an exceptional event like a machine miscalibration or a bad batch of materials.
+
+This direct link ensures that the "Rework Cost Trend" chart in the Quality dashboard is a realistic representation of how rework costs scale with production volume. A month with higher WIP will naturally show higher rework costs.
+
+### Scrap and Yield Modeling
+
+-   **Scrap Costs**: Scrap is not random. The `mesStepCosts` array assigns a cumulative cost at each major step of the manufacturing process. A failure at a later step (e.g., "Final Test") is more costly than a failure at an early step (e.g., "Wafer Lapping"), which is true to life.
+-   **Yield Data**: The `processAreaYieldData` simulates yield percentages for different process areas, with some inherent randomness and trends over time based on product "personalities" defined in the `PRODUCTS` constant. This data directly influences the overall cost calculations in the `dailySummary`.
+
+### Product "Personalities"
+
+Each product is given a `personality` object that defines its `volatility` and `eventMagnitude`.
+-   **Volatility**: A product with high volatility will see larger swings in its daily costs, scrap rates, and process times.
+-   **Event Magnitude**: This parameter controls how strongly a product is affected by pre-defined "events" in the `getProductVariance` function. For example, "Product Alpha" is coded to have an etching-related issue for a specific 3-month period, and its `eventMagnitude` determines the financial impact of that event. This allows the dashboard to demonstrate how it would visualize a known production problem.
+
+By baking these scenarios into the data, the dashboard becomes a powerful tool for demonstrating analytical capabilities on data that mirrors the complexities of a real manufacturing environment.

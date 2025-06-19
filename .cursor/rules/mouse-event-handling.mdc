@@ -1,0 +1,171 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Mouse Event Handling Best Practices
+
+This document outlines critical guidelines for handling mouse events to prevent cursor trapping issues that can lock the user's mouse cursor.
+
+## Core Principles
+
+### 1. Use Chart.js Event System (Not Direct Canvas Events)
+**NEVER** bind events directly to canvas elements. Always use Chart.js's built-in event handling.
+
+**❌ WRONG - Direct Canvas Binding:**
+```javascript
+chart.canvas.onclick = handleClick;
+chart.canvas.addEventListener('click', handleClick);
+```
+
+**✅ CORRECT - Chart.js onClick Option:**
+```javascript
+const chart = new Chart(ctx, {
+    type: 'bar',
+    options: {
+        onClick: (event, elements) => {
+            // Handle click with proper Chart.js signature
+            handleChartClick(event, elements);
+        }
+    }
+});
+```
+
+### 2. Avoid Duplicate Global Event Listeners
+**NEVER** create multiple global click listeners for the same functionality.
+
+**❌ WRONG - Duplicate Listeners:**
+```javascript
+// First listener
+window.addEventListener('click', closeDropdowns);
+// Second listener (creates conflict)
+document.addEventListener('click', closeDropdowns);
+```
+
+**✅ CORRECT - Single Global Listener:**
+```javascript
+// Only one global listener outside event handlers
+window.addEventListener('click', () => {
+    document.querySelectorAll('.dropdown-panel').forEach(panel => {
+        panel.classList.remove('show');
+    });
+});
+```
+
+### 3. Proper Drag and Drop Event Cleanup
+Always implement comprehensive drag event cleanup to prevent stuck drag states.
+
+**✅ REQUIRED - Complete Drag Cleanup:**
+```javascript
+function addDragDropListeners() {
+    // Add dragend listener to clean up stuck states
+    document.addEventListener('dragend', handleDragEnd);
+}
+
+function handleDragEnd(e) {
+    // Clean up drag state regardless of success/failure
+    if (draggedItem) {
+        draggedItem.style.opacity = '1';
+        draggedItem.classList.remove('dragging');
+        draggedItem = null;
+    }
+    
+    // Remove lingering visual states
+    document.querySelectorAll('.drag-over').forEach(element => {
+        element.classList.remove('drag-over');
+    });
+}
+
+function handleDrop(e) {
+    e.preventDefault();
+    // ... drop logic ...
+    
+    // Always clean up, even on successful drop
+    handleDragEnd(e);
+}
+```
+
+### 4. Event Handler Signatures
+Use consistent event handler signatures that match the expected API.
+
+**Chart.js Click Handlers:**
+```javascript
+function handleChartClick(event, elements) {
+    if (!elements.length) return;
+    
+    // Access clicked element
+    const index = elements[0].index;
+    const label = chart.data.labels[index];
+    
+    // Handle interaction
+}
+```
+
+**Drag Event Handlers:**
+```javascript
+function handleDragStart(e) {
+    draggedItem = e.target;
+    e.dataTransfer.setData('text/plain', draggedItem.dataset.value);
+    // Add visual feedback
+    setTimeout(() => {
+        if (draggedItem) {
+            draggedItem.style.opacity = '0.5';
+            draggedItem.classList.add('dragging');
+        }
+    }, 0);
+}
+```
+
+## Common Anti-Patterns to Avoid
+
+### 1. Canvas Event Binding
+- Never use `canvas.onclick` or `canvas.addEventListener`
+- Always use Chart.js `onClick` option
+
+### 2. Missing Event Cleanup
+- Always implement `dragend` handlers
+- Clean up visual states (opacity, classes)
+- Reset global variables
+
+### 3. Event Propagation Issues
+- Use `stopPropagation()` judiciously - only when necessary
+- Don't prevent events from reaching browser/OS level unnecessarily
+
+### 4. Conflicting Event Listeners
+- Avoid multiple listeners for the same global events
+- Check for existing listeners before adding new ones
+
+## Files with Event Handling
+
+### Chart Event Handling
+- [js/cost-category-analysis.js](mdc:js/cost-category-analysis.js) - Proper Chart.js onClick implementation
+- [js/material-analysis.js](mdc:js/material-analysis.js) - Fixed from canvas.onclick to Chart.js onClick
+- [js/org-costing.js](mdc:js/org-costing.js) - Chart click handlers with proper signatures
+
+### Drag and Drop
+- [js/cost-configuration.js](mdc:js/cost-configuration.js) - Complete drag event cleanup implementation
+
+### Global Event Management
+- [js/global-filters.js](mdc:js/global-filters.js) - Fixed duplicate global click listeners
+
+## Testing for Mouse Trapping
+
+### Symptoms of Mouse Trapping:
+1. Mouse cursor cannot click on other applications
+2. Cursor appears "stuck" or unresponsive outside the browser
+3. Need to refresh page or restart browser to regain control
+
+### Prevention Checklist:
+- [ ] No direct canvas event binding
+- [ ] Single global click listeners only
+- [ ] Complete drag event cleanup
+- [ ] Proper event handler signatures
+- [ ] No unnecessary event prevention
+
+## Emergency Fixes
+
+If mouse trapping occurs:
+1. Check for direct canvas event bindings
+2. Look for duplicate global event listeners
+3. Verify drag event cleanup is complete
+4. Ensure events can bubble to browser level

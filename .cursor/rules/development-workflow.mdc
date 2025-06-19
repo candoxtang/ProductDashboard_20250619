@@ -1,0 +1,330 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Development Workflow & Best Practices
+
+This document outlines the established development workflow, debugging patterns, and best practices for the Product Costing Dashboard project.
+
+## Development Workflow
+
+### 1. Feature Development Process
+1. **Analysis Phase**: Understand data requirements and UI interactions
+2. **Data Architecture**: Design data structures and generation logic
+3. **UI Implementation**: Create layout and interactive components with proper event handling
+4. **Integration**: Connect data flow with UI components
+5. **Testing**: Verify data consistency, user interactions, and mouse event handling
+6. **Optimization**: Refine performance, user experience, and UI density
+7. **Debugging**: Use systematic troubleshooting approaches (see [debugging-and-troubleshooting.mdc](mdc:.cursor/rules/debugging-and-troubleshooting.mdc))
+
+### 2. Code Organization Patterns
+
+#### File Responsibility Model
+- **[data-source.js](mdc:js/data-source.js)**: Master data generation and configuration
+- **[data-generators.js](mdc:js/data-generators.js)**: Specialized data creation functions
+- **[data.js](mdc:js/data.js)**: Data orchestration and enhancement
+- **Dashboard modules**: UI logic and chart management
+- **Utility modules**: Shared functions and formatting
+
+#### Function Naming Conventions
+```javascript
+// Data generation
+function generateXxxData()          // Creates new data structures
+function preSummarizeXxx()         // Pre-processes data for aggregation
+function enhanceXxxData()          // Adds calculated fields
+
+// UI functions
+function setupXxx()                // Initial setup and event binding
+function updateXxx()               // Updates based on state changes
+function renderXxx()               // Pure rendering functions
+function applyFiltersAndRedraw()   // Standard filter application pattern
+```
+
+### 3. Event-Driven Architecture
+
+#### Event Sequence Pattern
+```javascript
+// 1. Data initialization
+document.addEventListener('DOMContentLoaded', initializeDataSource);
+// 2. Base data ready
+document.dispatchEvent(new CustomEvent('dataReady', { detail: window.appData }));
+// 3. Enhanced data ready
+document.dispatchEvent(new CustomEvent('enhancedDataReady', { detail: enhancedData }));
+// 4. Filter changes
+document.dispatchEvent(new CustomEvent('globalFiltersChanged', { detail: filterState }));
+```
+
+#### Event Listener Patterns
+```javascript
+// Standard event listener setup
+document.addEventListener('dataReady', function(event) {
+    isDataReady = true;
+    if (currentTab === 'target-tab') {
+        initializeCharts();
+    }
+});
+
+document.addEventListener('globalFiltersChanged', function(event) {
+    if (isDataReady && currentTab === 'target-tab') {
+        applyFiltersAndRedraw();
+    }
+});
+```
+
+## Debugging Patterns
+
+### 1. Data Flow Debugging
+**Console Logging Strategy**:
+```javascript
+// Data generation checkpoints
+console.log('Generated lot data:', lotData.length, 'records');
+console.log('Sample lot record:', lotData[0]);
+
+// Filter application debugging
+console.log('Before filtering:', data.length);
+console.log('After global filters:', filteredData.length);
+console.log('After chart selection:', finalData.length);
+
+// Chart data debugging
+console.log('Chart data structure:', chartData);
+console.log('Chart options:', chartConfig.options);
+```
+
+### 2. State Debugging
+**State Inspection Functions**:
+```javascript
+// Global state inspection
+function debugAppState() {
+    console.log('Current tab:', currentTab);
+    console.log('Global filters:', window.globalFilters?.getState());
+    console.log('Chart selections:', selectedDetailKeys);
+    console.log('Grid state:', { currentPage: gridCurrentPage, sortField: gridSortField });
+}
+
+// Data consistency checks
+function validateDataConsistency() {
+    const lotTotal = lotData.reduce((sum, lot) => sum + lot.actualCost, 0);
+    const summaryTotal = /* calculate from daily summary */;
+    console.log('Data consistency check:', { lotTotal, summaryTotal, difference: Math.abs(lotTotal - summaryTotal) });
+}
+```
+
+### 3. Performance Debugging
+**Timing and Memory Patterns**:
+```javascript
+// Performance timing
+console.time('Data generation');
+generateLotData();
+console.timeEnd('Data generation');
+
+// Memory usage tracking
+console.log('Memory usage:', performance.memory?.usedJSHeapSize / 1024 / 1024, 'MB');
+
+// Chart rendering performance
+console.time('Chart render');
+chart.update();
+console.timeEnd('Chart render');
+```
+
+## Code Quality Standards
+
+### 1. Data Validation Patterns
+```javascript
+// Input validation
+function validateProductData(products) {
+    if (!Array.isArray(products) || products.length === 0) {
+        throw new Error('Invalid products data');
+    }
+    
+    products.forEach(product => {
+        if (!product.name || !product.fab || !product.technology) {
+            throw new Error(`Invalid product structure: ${JSON.stringify(product)}`);
+        }
+    });
+}
+
+// Data consistency validation
+function validateCostConsistency(lotData, summaryData) {
+    const tolerance = 0.01; // 1% tolerance
+    // Implementation...
+}
+```
+
+### 2. Error Handling Patterns
+```javascript
+// Graceful degradation
+function safeChartUpdate(chart, data) {
+    try {
+        chart.data.datasets[0].data = data;
+        chart.update();
+    } catch (error) {
+        console.error('Chart update failed:', error);
+        // Show fallback message
+        document.getElementById('chart-container').innerHTML = '<p>Chart temporarily unavailable</p>';
+    }
+}
+
+// Data generation error handling
+function generateDataWithFallback() {
+    try {
+        return generateComplexData();
+    } catch (error) {
+        console.warn('Complex data generation failed, using simple data:', error);
+        return generateSimpleData();
+    }
+}
+```
+
+### 3. Performance Optimization Patterns
+
+#### Debouncing User Interactions
+```javascript
+let filterUpdateTimeout;
+function debouncedFilterUpdate() {
+    clearTimeout(filterUpdateTimeout);
+    filterUpdateTimeout = setTimeout(() => {
+        applyFiltersAndRedraw();
+    }, 300);
+}
+```
+
+#### Efficient Data Filtering
+```javascript
+// Pre-filter data once, reuse multiple times
+let baseFilteredData = [];
+function updateBaseFilter() {
+    baseFilteredData = rawData.filter(applyGlobalFilters);
+}
+
+function applyChartFilter(chartSelections) {
+    return baseFilteredData.filter(item => chartSelections.includes(item.key));
+}
+```
+
+#### Memory Management
+```javascript
+// Chart cleanup on tab switch
+function cleanupCharts() {
+    if (window.ccaPlannedVsActualChart) {
+        window.ccaPlannedVsActualChart.destroy();
+        window.ccaPlannedVsActualChart = null;
+    }
+}
+```
+
+## Testing Strategies
+
+### 1. Data Consistency Testing
+```javascript
+// Automated consistency checks
+function runDataConsistencyTests() {
+    const tests = [
+        testLotCostSummation(),
+        testMesOperationTotals(),
+        testTechnologyCostRanges(),
+        testDateRangeConsistency()
+    ];
+    
+    const failed = tests.filter(test => !test.passed);
+    if (failed.length > 0) {
+        console.error('Data consistency tests failed:', failed);
+    }
+}
+```
+
+### 2. UI Interaction Testing
+```javascript
+// Manual testing checklist functions
+function testFilterInteractions() {
+    console.log('Testing filter interactions...');
+    // Simulate filter changes
+    // Verify chart updates
+    // Verify grid updates
+}
+
+function testChartSelections() {
+    console.log('Testing chart selections...');
+    // Simulate chart clicks
+    // Verify multi-selection behavior
+    // Verify grid filtering
+}
+```
+
+## Code Review Guidelines
+
+### 1. Data Generation Review
+- **Consistency**: Verify mathematical relationships between data layers
+- **Realism**: Check that generated values match expected business ranges
+- **Performance**: Ensure generation completes within reasonable time
+- **Memory**: Verify no memory leaks in large data generation
+
+### 2. UI Implementation Review
+- **Responsiveness**: Test layout on different screen sizes
+- **Accessibility**: Verify keyboard navigation and screen reader compatibility
+- **Performance**: Check smooth interactions with large datasets
+- **Consistency**: Ensure styling matches established patterns
+
+### 3. Integration Review
+- **Event Flow**: Verify proper event sequence and handling
+- **Error Handling**: Test graceful degradation scenarios
+- **State Management**: Ensure consistent state across components
+- **Filter Logic**: Verify complex filter combinations work correctly
+
+## Documentation Standards
+
+### 1. Code Comments
+```javascript
+/**
+ * Generates lot manufacturing data based on product configuration and daily summaries
+ * @param {Array} products - Full product objects with fab and technology
+ * @param {Object} dailySummary - Pre-summarized daily cost data
+ * @param {number} daysBack - Number of days to generate data for
+ * @returns {Array} Array of lot objects with manufacturing metrics
+ */
+function generateLotData(products, dailySummary, daysBack = 180) {
+    // Implementation...
+}
+```
+
+### 2. Configuration Documentation
+```javascript
+// Technology-based cost configuration
+const TECHNOLOGY_COSTS = {
+    '65nm': { base: 125000, variance: 0.05 },  // $125K ± 5%
+    '45nm': { base: 250000, variance: 0.05 },  // $250K ± 5%
+    '28nm': { base: 65000, variance: 0.05 }    // $65K ± 5%
+};
+```
+
+### 3. API Documentation
+```javascript
+// Global data structure documentation
+window.appData = {
+    configData: {
+        // Configuration arrays and objects
+    },
+    dailySummary: {
+        // Daily aggregated cost data
+    },
+    lotData: [], // Manufacturing lot records
+    mesData: []  // MES operation records
+};
+```
+
+## Deployment Considerations
+
+### 1. File Dependencies
+- Ensure all JavaScript files are loaded in correct order
+- Verify CSS dependencies are properly linked
+- Check that asset paths are correct
+
+### 2. Performance Monitoring
+- Monitor initial data generation time
+- Track chart rendering performance
+- Monitor memory usage with large datasets
+
+### 3. Browser Compatibility
+- Test in Chrome, Firefox, Safari, Edge
+- Verify Chart.js compatibility
+- Check ES6+ feature support

@@ -1,0 +1,411 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Debugging and Troubleshooting Guide
+
+This document provides systematic approaches to diagnosing and fixing common issues in the Product Costing Dashboard.
+
+## Mouse Trapping Issues
+
+### Symptoms
+- Mouse cursor cannot click on other applications
+- Cursor appears "stuck" or unresponsive outside the browser
+- Need to refresh page or restart browser to regain control
+
+### Diagnostic Steps
+
+#### 1. Check for Direct Canvas Event Binding
+```bash
+# Search for problematic canvas event binding
+grep -r "canvas\.onclick\|canvas\.addEventListener" js/
+```
+
+**Common Problem:**
+```javascript
+// ❌ WRONG - Direct canvas binding
+chart.canvas.onclick = handleClick;
+```
+
+**Solution:**
+```javascript
+// ✅ CORRECT - Chart.js onClick option
+const chart = new Chart(ctx, {
+    options: {
+        onClick: (event, elements) => handleClick(event, elements)
+    }
+});
+```
+
+#### 2. Check for Duplicate Global Event Listeners
+```bash
+# Search for multiple global click listeners
+grep -r "window\.addEventListener.*click\|document\.addEventListener.*click" js/
+```
+
+**Common Problem:**
+```javascript
+// Multiple listeners for the same functionality
+window.addEventListener('click', closeDropdowns);
+document.addEventListener('click', closeDropdowns); // Duplicate!
+```
+
+**Solution:** Keep only one global listener in the appropriate scope.
+
+#### 3. Check Drag and Drop Event Cleanup
+```bash
+# Search for drag events without proper cleanup
+grep -r "dragstart\|dragend\|dragleave" js/
+```
+
+**Required Pattern:**
+```javascript
+// Must have dragend cleanup
+function addDragDropListeners() {
+    document.addEventListener('dragend', handleDragEnd);
+}
+
+function handleDragEnd(e) {
+    // Clean up ALL drag state
+    if (draggedItem) {
+        draggedItem.style.opacity = '1';
+        draggedItem.classList.remove('dragging');
+        draggedItem = null;
+    }
+    document.querySelectorAll('.drag-over').forEach(el => {
+        el.classList.remove('drag-over');
+    });
+}
+```
+
+### Fixed Files Reference
+- **[js/global-filters.js](mdc:js/global-filters.js)**: Fixed duplicate global click listeners
+- **[js/cost-configuration.js](mdc:js/cost-configuration.js)**: Added comprehensive drag event cleanup
+- **[js/material-analysis.js](mdc:js/material-analysis.js)**: Converted canvas.onclick to Chart.js onClick
+
+## Data Loading Issues
+
+### Symptoms
+- Charts not rendering
+- "Data not ready" console messages
+- Empty grids or undefined data errors
+
+### Diagnostic Steps
+
+#### 1. Check Event Listener Registration
+```javascript
+// Verify proper event listener setup
+document.addEventListener('dataReady', () => {
+    console.log('Data ready event received');
+    // Initialization code here
+});
+
+document.addEventListener('enhancedDataReady', () => {
+    console.log('Enhanced data ready event received');
+    // Advanced features here
+});
+```
+
+#### 2. Verify Data Structure
+```javascript
+// Check data availability in console
+console.log('window.appData:', window.appData);
+console.log('Lot data:', window.appData?.lotData?.length);
+console.log('MES data:', window.appData?.mesData?.length);
+```
+
+#### 3. Check Tab Visibility Logic
+```javascript
+// Ensure proper tab checking
+function updateCharts() {
+    const currentTab = document.querySelector('.tab-content.active')?.id;
+    if (currentTab !== 'expected-tab-id') return;
+    
+    // Chart update logic
+}
+```
+
+## Performance Issues
+
+### Symptoms
+- Slow chart rendering
+- Laggy interactions
+- Memory leaks over time
+
+### Diagnostic Steps
+
+#### 1. Check Chart Cleanup
+```javascript
+// Verify charts are properly destroyed
+function destroyCharts() {
+    if (chart) {
+        window.chartUtils.destroyChart(chart);
+        chart = null;
+    }
+}
+```
+
+#### 2. Monitor Memory Usage
+```javascript
+// Add memory monitoring
+function logMemoryUsage() {
+    if (performance.memory) {
+        console.log('Memory usage:', {
+            used: Math.round(performance.memory.usedJSHeapSize / 1048576) + 'MB',
+            total: Math.round(performance.memory.totalJSHeapSize / 1048576) + 'MB'
+        });
+    }
+}
+```
+
+#### 3. Check Filter Performance
+```javascript
+// Profile filter operations
+console.time('Filter Operation');
+const filtered = data.filter(/* filter logic */);
+console.timeEnd('Filter Operation');
+```
+
+## Grid Display Issues
+
+### Symptoms
+- Grid not showing data
+- Incorrect filtering results
+- Pagination not working
+
+### Diagnostic Steps
+
+#### 1. Check Data Flow
+```javascript
+// Verify data reaches grid
+function updateGrid() {
+    console.log('Grid data length:', gridData.length);
+    console.log('Filtered data length:', filteredGridData.length);
+    console.log('Current page:', gridCurrentPage);
+}
+```
+
+#### 2. Verify Filter Logic
+```javascript
+// Debug filter conditions
+const filtered = data.filter(item => {
+    const passes = /* filter conditions */;
+    if (!passes) {
+        console.log('Item filtered out:', item, 'Reason:', /* specific condition */);
+    }
+    return passes;
+});
+```
+
+#### 3. Check Pagination Math
+```javascript
+// Verify pagination calculations
+const totalItems = filteredData.length;
+const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, totalItems);
+
+console.log('Pagination:', { totalItems, totalPages, currentPage, startIndex, endIndex });
+```
+
+## Chart Interaction Issues
+
+### Symptoms
+- Chart clicks not working
+- Selection not updating
+- Multi-select not functioning
+
+### Diagnostic Steps
+
+#### 1. Check Event Handler Signature
+```javascript
+// Verify correct Chart.js event signature
+function handleChartClick(event, elements) {
+    console.log('Chart clicked:', { event, elements });
+    
+    if (!elements.length) {
+        console.log('No elements clicked');
+        return;
+    }
+    
+    const index = elements[0].index;
+    const label = chart.data.labels[index];
+    console.log('Clicked:', { index, label });
+}
+```
+
+#### 2. Verify Chart Configuration
+```javascript
+// Check onClick configuration
+const chartConfig = {
+    type: 'bar',
+    options: {
+        onClick: handleChartClick, // Must be present
+        // Other options...
+    }
+};
+```
+
+#### 3. Check Selection State Management
+```javascript
+// Debug selection state
+function updateSelection(newSelection) {
+    console.log('Old selection:', selectedItems);
+    console.log('New selection:', newSelection);
+    
+    selectedItems = [...newSelection];
+    
+    // Update visual indicators
+    window.chartUtils.updateBarSelectionStyle(chart, selectedItems);
+}
+```
+
+## CSS Layout Issues
+
+### Symptoms
+- Elements not sizing correctly
+- Overflow problems
+- Responsive layout broken
+
+### Diagnostic Steps
+
+#### 1. Check Flexbox Hierarchy
+```css
+/* Verify proper flex setup */
+.parent {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.child {
+    flex: 1;
+    min-height: 0; /* Critical for nested flex */
+}
+```
+
+#### 2. Verify Overflow Settings
+```css
+/* Check overflow cascade */
+body { overflow: hidden; }
+main { overflow: hidden; }
+.tab-content { overflow: hidden; }
+.grid-container { overflow: auto; } /* Only where needed */
+```
+
+#### 3. Check Responsive Breakpoints
+```css
+/* Verify media queries */
+@media (max-width: 768px) {
+    /* Mobile styles */
+}
+@media (max-width: 992px) {
+    /* Tablet styles */
+}
+```
+
+## Common Error Patterns
+
+### 1. Undefined Data Access
+```javascript
+// ❌ WRONG - No safety checks
+const value = window.appData.lotData[0].cost;
+
+// ✅ CORRECT - Safe access
+const value = window.appData?.lotData?.[0]?.cost || 0;
+```
+
+### 2. Missing Event Cleanup
+```javascript
+// ❌ WRONG - No cleanup
+element.addEventListener('click', handler);
+
+// ✅ CORRECT - Proper cleanup
+function setupEventListeners() {
+    element.addEventListener('click', handler);
+    // Store reference for cleanup
+}
+
+function cleanup() {
+    element.removeEventListener('click', handler);
+}
+```
+
+### 3. Incorrect Chart Destruction
+```javascript
+// ❌ WRONG - Memory leak
+chart = new Chart(ctx, config);
+
+// ✅ CORRECT - Proper cleanup
+if (chart) {
+    chart.destroy();
+    chart = null;
+}
+chart = new Chart(ctx, config);
+```
+
+## Debugging Tools and Techniques
+
+### 1. Browser Developer Tools
+```javascript
+// Console debugging helpers
+window.debugApp = {
+    logData: () => console.log(window.appData),
+    logFilters: () => console.log(window.getGlobalFilters()),
+    logCharts: () => console.log(Chart.instances),
+    clearCharts: () => Chart.instances.forEach(chart => chart.destroy())
+};
+```
+
+### 2. Performance Monitoring
+```javascript
+// Add performance markers
+performance.mark('data-load-start');
+// ... data loading ...
+performance.mark('data-load-end');
+performance.measure('data-load-time', 'data-load-start', 'data-load-end');
+```
+
+### 3. Error Boundary Pattern
+```javascript
+// Wrap critical operations
+function safeExecute(operation, fallback) {
+    try {
+        return operation();
+    } catch (error) {
+        console.error('Operation failed:', error);
+        return fallback;
+    }
+}
+```
+
+## Quick Fix Checklist
+
+When encountering issues, check these common fixes:
+
+### Mouse Issues:
+- [ ] Remove direct canvas event binding
+- [ ] Eliminate duplicate global listeners
+- [ ] Add dragend event cleanup
+- [ ] Verify event propagation
+
+### Data Issues:
+- [ ] Check event listener registration
+- [ ] Verify data structure in console
+- [ ] Confirm tab visibility logic
+- [ ] Test filter conditions
+
+### Performance Issues:
+- [ ] Destroy charts properly
+- [ ] Monitor memory usage
+- [ ] Profile filter operations
+- [ ] Check for memory leaks
+
+### Layout Issues:
+- [ ] Verify flexbox hierarchy
+- [ ] Check overflow settings
+- [ ] Test responsive breakpoints
+- [ ] Validate CSS specificity
+
+This guide provides systematic approaches to diagnosing and fixing the most common issues encountered in the Product Costing Dashboard.

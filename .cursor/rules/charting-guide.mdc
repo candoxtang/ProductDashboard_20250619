@@ -1,0 +1,102 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Charting Implementation Guide
+
+This guide provides the standards for creating and updating charts within the dashboard. Adhering to these rules ensures consistency and maintainability.
+
+## 1. Chart Creation
+
+All charts should be created using the `createOrUpdateChart` helper function, which handles the necessary cleanup and instantiation.
+
+```javascript
+// From quality-dashboard.js
+function createOrUpdateChart(chartId, chartInstance, chartConfig) {
+    if (chartInstance) {
+        chartInstance.destroy();
+    }
+    const ctx = document.getElementById(chartId)?.getContext('2d');
+    if (ctx) {
+        return new Chart(ctx, chartConfig);
+    }
+    return null;
+}
+```
+
+## 2. Color Standardization
+
+To ensure visual consistency, all charts must use the central color palettes defined in `js/chart-utils.js`.
+
+-   **Categorical Data (e.g., Products, Fabs):** For charts displaying multiple categories, colors should be assigned by iterating through the `chartColors.main` array. This ensures the same colors are used in the same order for categories across different charts.
+
+    **Example:**
+    ```javascript
+    // From quality-dashboard.js
+    const backgroundColors = chartData.map((_, index) => 
+        chartColors.main[index % chartColors.main.length]
+    );
+
+    // ...
+    datasets: [{
+        label: 'My Dataset',
+        data: chartData,
+        backgroundColor: backgroundColors
+    }]
+    ```
+
+-   **Specific Meanings:** For data with a specific, consistent meaning (e.g., Planned vs. Actual), use the named colors from `chartColors` like `chartColors.planned` or `chartColors.negative_variance`.
+
+## 3. Data Formatting and Labels
+
+To maintain a clean and readable interface, all charts must follow these formatting rules:
+
+-   **No Legends:** Chart legends are disabled by default to maximize space for the chart itself.
+    ```javascript
+    plugins: {
+        legend: { display: false },
+        // ... other plugins
+    }
+    ```
+
+-   **Formatted Data Labels:** All bar charts should display data labels on the bars. These labels, along with tooltip labels, must be formatted to two decimal places.
+    ```javascript
+    plugins: {
+        //...
+        datalabels: {
+            anchor: 'end',
+            align: 'end',
+            formatter: (value) => value.toFixed(2) + '%', // Or '$' + value.toFixed(2)
+            color: '#333'
+        },
+        tooltip: {
+            callbacks: {
+                label: (context) => context.raw.toFixed(2) + '%'
+            }
+        }
+    }
+    ```
+
+## 4. General Options
+
+All charts must include these base options to ensure they are responsive and correctly sized within their flexbox containers.
+
+```javascript
+options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    // ... other options
+}
+```
+
+## 5. Use clear and concise titles.
+
+### General Chart Configuration
+
+- **Tooltips:** Tooltips are mandatory and must be configured to show relevant information clearly. For financial data, format numbers with currency signs and appropriate decimal places.
+- **Data Labels:** Use data labels sparingly. For high-density charts like line charts, they should be disabled by default to avoid visual clutter. They can be enabled for smaller bar charts if the labels provide significant value.
+- **Legends:** Legends should be disabled on most charts, especially bar and trend charts where the axes or tooltips provide sufficient context. Only use legends for complex charts (e.g., stacked charts with multiple categories) where they are essential for interpretation.
+- **Responsiveness:** All charts must be responsive (`responsive: true`) and should generally not maintain their aspect ratio (`maintainAspectRatio: false`) to fill their container correctly.
+
+### Color Usage

@@ -1,0 +1,55 @@
+Date : 2025-06-16 13:16:16
+Directory : c:\Development\ProductCostingDashboard\ProductCostingDashboard
+Total : 24 files,  6336 codes, 374 comments, 1007 blanks, all 7717 lines
+
+Languages
++------------+------------+------------+------------+------------+------------+
+| language   | files      | code       | comment    | blank      | total      |
++------------+------------+------------+------------+------------+------------+
+| JavaScript |         16 |      4,681 |        316 |        724 |      5,721 |
+| CSS        |          1 |      1,131 |         39 |        180 |      1,350 |
+| HTML       |          1 |        281 |         19 |          8 |        308 |
+| Markdown   |          6 |        243 |          0 |         95 |        338 |
++------------+------------+------------+------------+------------+------------+
+
+Directories
++-----------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                                          | files      | code       | comment    | blank      | total      |
++-----------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                                             |         24 |      6,336 |        374 |      1,007 |      7,717 |
+| . (Files)                                                                                     |          3 |        387 |         19 |         46 |        452 |
+| css                                                                                           |          1 |      1,131 |         39 |        180 |      1,350 |
+| docs                                                                                          |          4 |        137 |          0 |         57 |        194 |
+| js                                                                                            |         16 |      4,681 |        316 |        724 |      5,721 |
++-----------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++-----------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| filename                                                                                      | language   | code       | comment    | blank      | total      |
++-----------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| c:\Development\ProductCostingDashboard\ProductCostingDashboard\CONTRIBUTING.md                | Markdown   |        105 |          0 |         38 |        143 |
+| c:\Development\ProductCostingDashboard\ProductCostingDashboard\README.md                      | Markdown   |          1 |          0 |          0 |          1 |
+| c:\Development\ProductCostingDashboard\ProductCostingDashboard\css\style.css                  | CSS        |      1,131 |         39 |        180 |      1,350 |
+| c:\Development\ProductCostingDashboard\ProductCostingDashboard\docs\README.md                 | Markdown   |         28 |          0 |         15 |         43 |
+| c:\Development\ProductCostingDashboard\ProductCostingDashboard\docs\architecture.md           | Markdown   |         26 |          0 |         16 |         42 |
+| c:\Development\ProductCostingDashboard\ProductCostingDashboard\docs\data-flow-diagrams.md     | Markdown   |         43 |          0 |         11 |         54 |
+| c:\Development\ProductCostingDashboard\ProductCostingDashboard\docs\development-guidelines.md | Markdown   |         40 |          0 |         15 |         55 |
+| c:\Development\ProductCostingDashboard\ProductCostingDashboard\index.html                     | HTML       |        281 |         19 |          8 |        308 |
+| c:\Development\ProductCostingDashboard\ProductCostingDashboard\js\chart-utils.js              | JavaScript |         98 |         24 |         15 |        137 |
+| c:\Development\ProductCostingDashboard\ProductCostingDashboard\js\charts.js                   | JavaScript |        423 |         17 |         78 |        518 |
+| c:\Development\ProductCostingDashboard\ProductCostingDashboard\js\cost-category-analysis.js   | JavaScript |        164 |         15 |         33 |        212 |
+| c:\Development\ProductCostingDashboard\ProductCostingDashboard\js\cost-configuration.js       | JavaScript |        198 |         13 |         43 |        254 |
+| c:\Development\ProductCostingDashboard\ProductCostingDashboard\js\data-generators.js          | JavaScript |        383 |         12 |         62 |        457 |
+| c:\Development\ProductCostingDashboard\ProductCostingDashboard\js\data-source.js              | JavaScript |        615 |         28 |         86 |        729 |
+| c:\Development\ProductCostingDashboard\ProductCostingDashboard\js\data.js                     | JavaScript |        543 |         29 |         56 |        628 |
+| c:\Development\ProductCostingDashboard\ProductCostingDashboard\js\date-utils.js               | JavaScript |        347 |         72 |         46 |        465 |
+| c:\Development\ProductCostingDashboard\ProductCostingDashboard\js\gauges.js                   | JavaScript |         48 |          8 |          9 |         65 |
+| c:\Development\ProductCostingDashboard\ProductCostingDashboard\js\global-filters.js           | JavaScript |        255 |         19 |         61 |        335 |
+| c:\Development\ProductCostingDashboard\ProductCostingDashboard\js\main.js                     | JavaScript |         32 |          9 |          6 |         47 |
+| c:\Development\ProductCostingDashboard\ProductCostingDashboard\js\manufacturing-dashboard.js  | JavaScript |        332 |         10 |         55 |        397 |
+| c:\Development\ProductCostingDashboard\ProductCostingDashboard\js\material-analysis.js        | JavaScript |        211 |         19 |         47 |        277 |
+| c:\Development\ProductCostingDashboard\ProductCostingDashboard\js\new_costing_data.js         | JavaScript |        388 |         21 |          7 |        416 |
+| c:\Development\ProductCostingDashboard\ProductCostingDashboard\js\org-costing.js              | JavaScript |        322 |          1 |         57 |        380 |
+| c:\Development\ProductCostingDashboard\ProductCostingDashboard\js\quality-dashboard.js        | JavaScript |        322 |         19 |         63 |        404 |
+| Total                                                                                         |            |      6,336 |        374 |      1,007 |      7,717 |
++-----------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+

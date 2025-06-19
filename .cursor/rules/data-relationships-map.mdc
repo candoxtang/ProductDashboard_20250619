@@ -1,0 +1,207 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Data Relationships & Structure Map
+
+This document maps all data relationships, structures, and dependencies across the Product Costing Dashboard application.
+
+## Core Data Entities
+
+### 1. Product Configuration
+**Source**: [data-source.js](mdc:js/data-source.js) `PRODUCTS` array
+```javascript
+{
+    id: number,                    // Unique identifier
+    name: string,                  // Base product name
+    displayName: string,           // "Product Name (Fab X)"
+    fab: string,                   // Manufacturing facility
+    technology: string,            // Process node (65nm, 45nm, 28nm)
+    baseCost: number,              // Base cost for calculations
+    baseYield: number,             // Expected yield (0.91-0.99)
+    baseWip: number,               // Base WIP inventory
+    personality: {                 // Cost behavior modifiers
+        volatility: number,        // Cost variance multiplier
+        eventMagnitude: number,    // Event impact scale
+        cost_multiplier: number    // Base cost adjustment
+    }
+}
+```
+
+### 2. Daily Cost Summary
+**Source**: [data-source.js](mdc:js/data-source.js) `preSummarizeData()`
+```javascript
+{
+    date: string,                  // YYYY-MM-DD format
+    product: string,               // Product display name
+    fab: string,                   // Fab identifier
+    technology: string,            // Technology node
+    total_planned: number,         // Total planned cost
+    total_actual: number,          // Total actual cost
+    total_variance: number,        // Cost variance
+    byProcessArea: {               // Process area breakdown
+        [areaName]: {
+            planned: number,
+            actual: number,
+            variance: number,
+            byMesStep: {           // MES step breakdown
+                [stepName]: {
+                    planned: number,
+                    actual: number,
+                    variance: number
+                }
+            }
+        }
+    }
+}
+```
+
+### 3. Manufacturing Lot Data
+**Source**: [data-generators.js](mdc:js/data-generators.js) `generateLotData()`
+```javascript
+{
+    sapOrder: number,              // SAP order (1000000+)
+    lotId: string,                 // "DEMOLOTXXXXX"
+    completedTime: string,         // ISO timestamp
+    status: "Completed"|"Processing",
+    product: string,               // Product with fab decoration
+    fab: string,                   // Fab identifier
+    technology: string,            // Technology node
+    plannedQty: 25,                // Standard planned quantity
+    completedQty: number,          // Actual completed
+    scrapQty: number,              // Scrapped units
+    wipQty: number,                // WIP units
+    yield: number,                 // Yield percentage
+    rework: "Y"|"N",               // Rework status
+    plannedCost: number,           // Technology-based cost
+    actualCost: number,            // Actual cost with variance
+    costVariance: number           // Variance amount
+}
+```
+
+### 4. MES Operation Data
+**Source**: [data-generators.js](mdc:js/data-generators.js) `generateMesData()`
+```javascript
+{
+    lot_id: string,                // Lot identifier
+    product: string,               // Product display name
+    fab: string,                   // Fab identifier
+    technology: string,            // Technology node
+    process_area: string,          // Process area name
+    stage: string,                 // FEOL|BEOL|Test|Assembly
+    mes_operation: string,         // Operation name
+    plan_cost: number,             // Planned step cost
+    actual_cost: number,           // Actual step cost
+    timestamp: Date,               // Operation timestamp
+    variance: number,              // Cost variance
+    status: "Complete"|"WIP"       // Operation status
+}
+```
+
+## Data Relationships
+
+### Product → Cost Hierarchy
+```
+Product Configuration
+├── Daily Cost Summary (aggregated by date)
+│   ├── Process Area Breakdown
+│   │   └── MES Step Breakdown
+│   └── Total Cost Metrics
+├── Manufacturing Lots (multiple per product)
+│   ├── Quantity Metrics
+│   ├── Technology-Based Costs
+│   └── Completion Status
+└── MES Operations (detailed steps)
+    ├── Step-Level Costs
+    ├── Process Area Grouping
+    └── Stage Classification
+```
+
+### Cost Calculation Flow
+1. **Base Costs** (Product Configuration) → 
+2. **Daily Variance** (Personality + Events) → 
+3. **Process Area Allocation** (Cost Structure) → 
+4. **MES Step Distribution** (Operation Weights) → 
+5. **Lot-Level Costs** (Technology Multipliers)
+
+## Technology-Based Cost Standards
+
+### Lot Cost Targets by Technology
+- **65nm**: $125,000 ± 5% planned cost
+- **45nm**: $250,000 ± 5% planned cost  
+- **28nm**: $65,000 ± 5% planned cost
+
+### Variance Patterns
+- **Planned Cost Variation**: ±5% lot-to-lot
+- **Actual Cost Variance**: -10% to +15% from planned
+- **Process Step Variance**: Derived from daily summary consistency
+
+## Data Generation Dependencies
+
+### Initialization Order
+1. **[data-source.js](mdc:js/data-source.js)**: Base data, daily summaries
+   - Dispatches: `dataReady` event
+2. **[data.js](mdc:js/data.js)**: Enhanced data generation
+   - Calls: `generateMesData()`, `generateLotData()`
+   - Dispatches: `enhancedDataReady` event
+3. **Dashboard Modules**: Chart and UI initialization
+
+### Cross-Module Data Access
+```javascript
+// Global data object structure
+window.appData = {
+    configData: {
+        fabs: string[],            // Available fabs
+        technologies: string[],    // Technology nodes
+        products: string[],        // Product names
+        fullProducts: object[],    // Complete product objects
+        processAreas: string[],    // Process areas
+        mes_steps: string[],       // MES operations
+        costStructure: object      // Cost allocation weights
+    },
+    dailySummary: object,          // Daily cost summaries
+    productWipTrend: object,       // WIP trend data
+    mesData: object[],             // MES operation records
+    lotData: object[],             // Manufacturing lot records
+    // ... other dashboard-specific data
+}
+```
+
+## Filter Compatibility Matrix
+
+### Global Filters Applied To:
+| Data Type | Fab | Technology | Product | Date Range |
+|-----------|-----|------------|---------|------------|
+| Daily Summary | ✓ | ✓ | ✓ | ✓ |
+| Lot Data | ✓ | ✓ | ✓ | ✓ |
+| MES Data | ✓ | ✓ | ✓ | ✓ |
+| Material Data | ✓ | ✓ | ✓ | ✓ |
+| Quality Data | ✓ | ✓ | ✓ | ✓ |
+
+### Chart-Specific Filters:
+- **Cost Category Analysis**: Analyze by (Product/Lot/Stage/Process Area)
+- **Organizational Costing**: Drill-down hierarchy
+- **Manufacturing**: Process area focus
+- **Quality**: Scrap/rework analysis
+- **Material**: Material family grouping
+
+## Data Consistency Rules
+
+### Mathematical Consistency
+1. **Lot costs** must align with **daily summary totals**
+2. **MES operation costs** must sum to **lot totals**
+3. **Process area variances** must match **aggregated step variances**
+4. **Technology-based costs** must follow **standard multipliers**
+
+### Temporal Consistency
+1. **Lot completion times** span **6-month data window**
+2. **MES operations** follow **realistic processing sequences**
+3. **Daily summaries** cover **continuous date ranges**
+4. **WIP trends** reflect **lot start/completion balance**
+
+### Status Logic
+- **Completed lots**: completedTime < (now - 7 days)
+- **Processing lots**: completedTime >= (now - 7 days)
+- **MES Complete**: Associated with completed lots
+- **MES WIP**: 10% probability for any operation

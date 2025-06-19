@@ -1,0 +1,48 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Layout and Style Guide
+
+This document outlines the rules and best practices for styling and layout to ensure a consistent user experience across all dashboards.
+
+## Core Styling
+
+*   **Main Stylesheet**: All global styles are located in `[css/style.css](mdc:css/style.css)`. Avoid using inline styles whenever possible.
+
+## Dashboard Layout
+
+*   **CSS Grid**: The primary layout mechanism for all dashboard tabs is CSS Grid. The main container for a tab's content (e.g., `<div id="manufacturing" class="tab-content">`) should have a child container that establishes the grid.
+    *   Example: The "Manufacturing & Production" tab uses a `.dashboard-grid` class for its main layout.
+    *   Example: The "Organizational Costing Overview" tab uses a `.org-costing-container` for its layout.
+
+*   **Consistent Content Blocks**:
+    *   Use the `.kpi-card` or `.card` class as the fundamental building block for all content sections. This class provides consistent padding, borders, and background color.
+    *   Each card should have a title (e.g., `<h2>...</h2>` or `<div class="card-title">...</div>`).
+
+## Chart Layout
+
+*   **Responsive Charts**: To ensure charts resize correctly and are responsive, the `<canvas>` element for every chart **must** be wrapped in a `div` with the class `.chart-container`.
+    *   `[js/chart-utils.js](mdc:js/chart-utils.js)` and the individual dashboard modules assume this structure. Failing to use it will break chart rendering and responsiveness.
+
+    ```html
+    <!-- CORRECT STRUCTURE -->
+    <div class="kpi-card">
+        <h2>Chart Title</h2>
+        <div class="chart-container">
+            <canvas id="myChart"></canvas>
+        </div>
+    </div>
+    ```
+
+*   **Pagination**: For charts that require pagination controls, a `div` with the class `.pagination-controls` should be placed immediately after the `.chart-container`. The JavaScript modules will target this `div` to render the controls.
+
+## Golden Rule: Follow Existing Patterns
+
+When creating a new dashboard or modifying an existing one, **always refer to a well-functioning tab first**.
+
+*   The **"Organizational Costing Overview"** tab (`org-costing-overview`) and its corresponding files (`[js/org-costing.js](mdc:js/org-costing.js)`) serve as the primary template for a responsive, multi-column grid layout.
+*   The **"Material Analysis"** tab (`material-analysis`) is a good example of a mixed layout with full-width and half-width cards.
+
+By copying the HTML structure and CSS classes from these examples, you can ensure that new additions will be visually consistent with the rest of the application.

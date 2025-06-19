@@ -1,0 +1,36 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Debugging Guide
+
+This guide covers common issues encountered during development and how to diagnose them.
+
+## Problem: A Chart is Blank or Shows No Data
+
+This is the most frequent issue. It can manifest as a completely empty chart or a chart with axes and labels but no bars/lines.
+
+### Diagnostic Steps:
+
+1.  **Check for `NaN` or invalid data in the final arrays.**
+    *   **Symptom**: The chart's data arrays (e.g., `plannedData`, `actualData`) might be filled with `0`s, or the browser console might show `NaN` values.
+    *   **Cause**: This almost always originates in `[js/data-source.js](mdc:js/data-source.js)`. It's typically caused by a logical error like division by zero or attempting to access a property that doesn't exist on a data object (e.g., the missing `cost_multiplier` property).
+    *   **Solution**:
+        1.  In the relevant chart update function (e.g., `updateMaterialFamilyCostChart` in `[js/material-analysis.js](mdc:js/material-analysis.js)`), add `console.log` statements to inspect the final data arrays just before `chart.update()` is called.
+        2.  Trace the calculation for the invalid data back to `[js/data-source.js](mdc:js/data-source.js)`. Add defensive code to prevent division by zero or ensure all required properties exist.
+
+2.  **Check the data filtering logic.**
+    *   **Symptom**: The console log shows that the filtered data array has a length of 0.
+    *   **Cause**: The filtering logic in the dashboard module (e.g., `getFilteredData` in `[js/material-analysis.js](mdc:js/material-analysis.js)`) is incorrect. A common mistake was comparing a full product name like `"Product Alpha (Fab A)"` from the data source with a base name like `"Product Alpha"` from the filters.
+    *   **Solution**: Add `console.log` to inspect the values being compared inside the `.filter()` callback to ensure they match as expected.
+
+3.  **Verify Chart.js Configuration.**
+    *   **Symptom**: The console shows errors like `createChart is not a function` or `Cannot set properties of undefined`.
+    *   **Cause**: The Chart.js instance or its configuration object is not correctly initialized. This can happen if the `<canvas>` element ID in `[index.html](mdc:index.html)` is wrong, or if the chart options are malformed. The `chartColors` object in `[js/chart-utils.js](mdc:js/chart-utils.js)` is also a key part of the configuration.
+    *   **Solution**: Verify the canvas ID in `[index.html](mdc:index.html)` matches the ID used in the `createChart` call. Step through the chart initialization in the debugger to ensure all objects are valid.
+
+4.  **Confirm the `dataReady` Event Fired.**
+    *   **Symptom**: The entire tab is blank, and console logs from the dashboard module's `initialize` function are missing.
+    *   **Cause**: An error in `[js/data-source.js](mdc:js/data-source.js)` is preventing the `dataReady` event from being dispatched.
+    *   **Solution**: Check the console for errors that occur before the "Dispatching dataReady event" log message.

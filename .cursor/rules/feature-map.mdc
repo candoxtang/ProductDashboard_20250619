@@ -1,0 +1,20 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Tab & Feature Logic Map
+
+This rule maps each user-facing tab in the dashboard to its controlling JavaScript file. The tab switching itself is handled by [js/main.js](mdc:js/main.js).
+
+*   **Organizational Costing Overview Tab**: Controlled by [js/org-costing.js](mdc:js/org-costing.js). This file handles the complex filtering and multi-level drill-down charts.
+
+*   **Manufacturing & Production Tab**: Controlled by [js/charts.js](mdc:js/charts.js).
+
+*   **Quality & Process Tab**: Controlled by [js/quality-dashboard.js](mdc:js/quality-dashboard.js).
+
+*   **Material Analysis Tab**: Controlled by [js/material-analysis.js](mdc:js/material-analysis.js).
+
+*   **Cost Category Analysis Tab**: Controlled by [js/cost-category-analysis.js](mdc:js/cost-category-analysis.js).
+
+*   **Actual Cost Config Tab**: Controlled by [js/cost-configuration.js](mdc:js/cost-configuration.js). This includes the drag-and-drop mapping and local storage logic.

@@ -1,0 +1,29 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Styling and Design Guide
+
+This document covers the visual styling conventions used in the dashboard.
+
+## Formal Design Rules
+A set of formal design rules is defined in [`chart-design-rules.mdc`](mdc:.cursor/rules/chart-design-rules.mdc). This includes important rules, such as **never adding legends to trend charts**.
+
+## Styling Implementation
+Consistent visual styling is achieved through shared utilities and conventions.
+
+### Chart Colors
+A standard color palette is defined in [`js/chart-utils.js`](mdc:js/chart-utils.js) under `window.chartUtils.chartColors.main`.
+
+To ensure products have a consistent color across all charts, use a helper function. A reference implementation can be found in [`js/org-costing.js`](mdc:js/org-costing.js) (`getProductColor`).
+
+### Point Styles (Shapes)
+To differentiate data series from different sources (e.g., Fabs), unique point styles are used on trend charts. A mapping of Fab to point style (e.g., `'Fab A': 'triangle'`) is defined in:
+- [`js/org-costing.js`](mdc:js/org-costing.js)
+- [`js/charts.js`](mdc:js/charts.js)
+
+This ensures, for example, that data from Fab A always appears with a triangular marker.
+
+### CSS
+General application styles are located in [`css/style.css`](mdc:css/style.css). This includes layout, typography, and styles for UI elements like buttons and tabs.

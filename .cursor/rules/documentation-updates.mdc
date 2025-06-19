@@ -1,0 +1,20 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Documentation Update Policy
+
+To ensure the long-term maintainability of this project, all developers must update the project documentation when making significant changes. Good documentation is as important as clean code.
+
+## When to Update Documentation
+
+You must update the relevant documents in the [`docs/`](mdc:docs) directory if your change affects any of the following:
+
+-   **Project Architecture**: If you change the core architectural layers, add a new major component, or alter the communication flow between layers, you must update [`docs/architecture.md`](mdc:docs/architecture.md).
+-   **Data Flow & Events**: If you modify the startup sequence, the `dataReady` event, or the `globalFiltersChanged` event, you must update the diagrams in [`docs/data-flow-diagrams.md`](mdc:docs/data-flow-diagrams.md).
+-   **Data Sources**: If you fundamentally change how data is generated or sourced (e.g., by adding a new data source file or changing the structure of `window.appData`), you must update [`docs/architecture.md`](mdc:docs/architecture.md).
+-   **Development Practices**: If a new convention is established or a new utility is created that should be used globally, update [`docs/development-guidelines.md`](mdc:docs/development-guidelines.md).
+-   **Getting Started**: If you add a build step, a new dependency, or change the way the project is run, you must update [`docs/README.md`](mdc:docs/README.md).
+
+By keeping our documentation in sync with our code, we make the project easier and faster to understand for everyone.
