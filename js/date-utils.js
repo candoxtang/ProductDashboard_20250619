@@ -183,9 +183,9 @@ window.dateUtils = (function() {
                 break;
             case 'Day':
             default:
-                // For Day view, show data from the past 7 days to provide meaningful comparison
+                // For Day view, show data from the past 3 days for a shorter time range than Week
                 startDate = new Date(today);
-                startDate.setDate(today.getDate() - 7); // Past 7 days
+                startDate.setDate(today.getDate() - 3); // Past 3 days
                 endDate = new Date(today);
                 endDate.setDate(today.getDate() - 1); // Until yesterday
                 break;
