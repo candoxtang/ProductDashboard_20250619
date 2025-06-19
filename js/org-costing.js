@@ -149,8 +149,37 @@
 
         try {
             const { dateUtils } = window;
+            
+            // DEBUG: Check today's data
+            const today = new Date();
+            const todayString = today.toISOString().split('T')[0];
+            console.log(`DEBUG: System today date object:`, today);
+            console.log(`DEBUG: System timezone offset:`, today.getTimezoneOffset());
+            console.log(`DEBUG: System today ISO string:`, today.toISOString());
+            console.log(`DEBUG: System today date string:`, todayString);
+            
+            const dailySummary = window.appData?.dailySummary || {};
+            const todayKeys = Object.keys(dailySummary).filter(key => key.startsWith(todayString));
+            console.log(`DEBUG: Today (${todayString}) has ${todayKeys.length} entries in dailySummary`);
+            
+            // Show sample of available dates
+            const allKeys = Object.keys(dailySummary);
+            const sampleKeys = allKeys.slice(0, 10);
+            console.log(`DEBUG: Sample dailySummary keys:`, sampleKeys);
+            
+            const allDates = [...new Set(allKeys.map(key => key.split('|')[0]))].sort();
+            console.log(`DEBUG: Available dates range:`, allDates.slice(0, 5), '...', allDates.slice(-5));
+            
+            // DEBUG: Check date range for Day view
+            const dayRange = dateUtils.getBarChartDateRange('Day');
+            const startString = dayRange.startDate.toISOString().split('T')[0];
+            const endString = dayRange.endDate.toISOString().split('T')[0];
+            console.log(`DEBUG: Day view date range: ${startString} to ${endString}`);
+            console.log(`DEBUG: Global filters:`, window.globalFilters);
+            
             const { trendData, barChartData } = dateUtils.getAggregatedData(window.globalFilters, 'product');
             console.log("Org Costing: Aggregated data received.", { trendData, barChartData });
+            console.log(`DEBUG: barChartData has ${barChartData.length} products`);
             
             level1Data = barChartData.sort((a,b) => b.total_actual - a.total_actual);
             l1TotalPages = Math.ceil(level1Data.length / L1_PAGE_SIZE);
@@ -194,13 +223,13 @@
         chartUtils.updateBarSelectionStyle(charts.level2, selectedProcessAreas);
         charts.level2.update();
         
-        const productTrendData = dateUtils.getAggregatedData(customFilters, 'product', 'product');
-        const trend = productTrendData.trendData;
+        const processAreaTrendData = dateUtils.getAggregatedData(customFilters, 'processArea', 'product');
+        const trend = processAreaTrendData.trendData;
 
         charts.varianceTrend.data.labels = trend.labels;
-        charts.varianceTrend.data.datasets = trend.groups.slice(0, 5).map((group) => {
-            const color = window.chartUtils.getProductColor(group.displayName);
-            const pointStyle = fabPointStyles[group.fab] || 'circle';
+        charts.varianceTrend.data.datasets = trend.groups.slice(0, 5).map((group, index) => {
+            const color = window.chartUtils.getProcessAreaColor(group.displayName) || window.chartUtils.chartColors.processAreaColors[index % window.chartUtils.chartColors.processAreaColors.length];
+            const pointStyle = 'circle';
             const groupData = trend.datasets[group.displayName];
             const varianceData = groupData.actual.map((val, idx) => val - groupData.planned[idx]);
             const randomLabelIndex = Math.floor(Math.random() * varianceData.length);

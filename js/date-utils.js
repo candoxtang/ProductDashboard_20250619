@@ -157,39 +157,48 @@ window.dateUtils = (function() {
      * @returns {string} Formatted time range string
      */
     function formatTimeRangeDisplay(aggregationLevel) {
-        const { startDate, endDate } = getBarChartDateRange(aggregationLevel);
         const today = new Date();
         
-        const formatDate = (date) => {
-            return date.toLocaleDateString('en-US', { 
-                month: 'short', 
-                day: 'numeric',
-                year: startDate.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
-            });
-        };
-
-        const formatMonth = (date) => {
-            return date.toLocaleDateString('en-US', { 
-                month: 'long',
-                year: date.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
-            });
-        };
-
         switch (aggregationLevel) {
             case 'Day':
-                return formatDate(startDate);
+                // Use same date calculation as filtering logic
+                const todayDateString = today.toISOString().split('T')[0]; // YYYY-MM-DD
+                const todayDate = new Date(todayDateString + 'T00:00:00'); // Avoid timezone issues
+                const formattedToday = todayDate.toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric'
+                });
+                return `Today (${formattedToday})`;
             case 'Week':
-                return `${formatDate(startDate)} - ${formatDate(endDate)}`;
+                const { startDate: weekStart, endDate: weekEnd } = getBarChartDateRange(aggregationLevel);
+                const formatDate = (date) => {
+                    return date.toLocaleDateString('en-US', { 
+                        month: 'short', 
+                        day: 'numeric',
+                        year: date.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
+                    });
+                };
+                return `${formatDate(weekStart)} - ${formatDate(weekEnd)}`;
             case 'Month':
-                return formatMonth(startDate);
+                const { startDate: monthStart } = getBarChartDateRange(aggregationLevel);
+                return monthStart.toLocaleDateString('en-US', { 
+                    month: 'long',
+                    year: monthStart.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
+                });
             case 'Quarter':
-                const quarter = Math.floor(startDate.getMonth() / 3) + 1;
-                const yearSuffix = startDate.getFullYear() !== today.getFullYear() ? ` ${startDate.getFullYear()}` : '';
+                const { startDate: quarterStart } = getBarChartDateRange(aggregationLevel);
+                const quarter = Math.floor(quarterStart.getMonth() / 3) + 1;
+                const yearSuffix = quarterStart.getFullYear() !== today.getFullYear() ? ` ${quarterStart.getFullYear()}` : '';
                 return `Q${quarter}${yearSuffix}`;
             case 'Year':
-                return `${startDate.getFullYear()}`;
+                const { startDate: yearStart } = getBarChartDateRange(aggregationLevel);
+                return `${yearStart.getFullYear()}`;
             default:
-                return formatMonth(startDate);
+                const { startDate: defaultStart } = getBarChartDateRange(aggregationLevel);
+                return defaultStart.toLocaleDateString('en-US', { 
+                    month: 'long',
+                    year: defaultStart.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
+                });
         }
     }
 
@@ -228,13 +237,12 @@ window.dateUtils = (function() {
                 break;
             case 'Day':
             default:
-                // Yesterday's data (most recent complete day with data)
-                const yesterday = new Date(today);
-                yesterday.setDate(today.getDate() - 1);
-                startDate = new Date(yesterday);
-                startDate.setHours(0, 0, 0, 0); // Start of yesterday
-                endDate = new Date(yesterday);
-                endDate.setHours(23, 59, 59, 999); // End of yesterday
+                // Today's data (current day) - use date string for consistent comparison
+                const todayDateString = today.toISOString().split('T')[0]; // Get YYYY-MM-DD
+                startDate = new Date(todayDateString);
+                startDate.setHours(0, 0, 0, 0);
+                endDate = new Date(todayDateString);
+                endDate.setHours(23, 59, 59, 999);
                 break;
         }
         return { startDate, endDate };
@@ -362,9 +370,52 @@ window.dateUtils = (function() {
 
         // 5. Filter data for the Bar chart using its specific date range
         const barChartDateFiltered = dimensionFiltered.filter(d => {
-            const itemDate = new Date(d.date);
-            return itemDate >= barChartDateRange.startDate && itemDate <= barChartDateRange.endDate;
+            // For Day aggregation, use direct string comparison to avoid timezone issues
+            if (aggregationLevel === 'Day') {
+                const todayString = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+                return d.date === todayString;
+            } else {
+                // For other aggregations, use date range comparison
+                const itemDate = new Date(d.date);
+                return itemDate >= barChartDateRange.startDate && itemDate <= barChartDateRange.endDate;
+            }
         });
+        
+        // DEBUG: Log filtering results for Day aggregation
+        if (aggregationLevel === 'Day') {
+            console.log(`DEBUG getAggregatedData: aggregationLevel=Day`);
+            console.log(`DEBUG: source entries = ${source.length}`);
+            console.log(`DEBUG: after dimension filter = ${dimensionFiltered.length}`);
+            console.log(`DEBUG: after date filter = ${barChartDateFiltered.length}`);
+            console.log(`DEBUG: date range = ${barChartDateRange.startDate.toISOString()} to ${barChartDateRange.endDate.toISOString()}`);
+            
+            const todayString = new Date().toISOString().split('T')[0];
+            
+            // Check if today's data exists in source before filtering
+            const todayInSource = source.filter(d => d.date === todayString);
+            console.log(`DEBUG: entries for today in source (${todayString}) = ${todayInSource.length}`);
+            
+            // Check if today's data exists after dimension filtering
+            const todayAfterDimFilter = dimensionFiltered.filter(d => d.date === todayString);
+            console.log(`DEBUG: entries for today after dimension filter (${todayString}) = ${todayAfterDimFilter.length}`);
+            
+            const todayEntries = barChartDateFiltered.filter(d => d.date === todayString);
+            console.log(`DEBUG: entries for today after date filter (${todayString}) = ${todayEntries.length}`);
+            
+            if (todayInSource.length > 0 && todayAfterDimFilter.length === 0) {
+                console.log(`DEBUG: Today's data was filtered out by dimension filters!`);
+                console.log(`DEBUG: Dimension filters:`, {selectedFabs, selectedTechnologies, selectedProducts});
+                console.log(`DEBUG: Sample today entry that was filtered:`, todayInSource[0]);
+            }
+            
+            if (todayEntries.length > 0) {
+                console.log(`DEBUG: Sample today entry after all filters:`, todayEntries[0]);
+            }
+            
+            // Show what dates we do have
+            const uniqueDates = [...new Set(barChartDateFiltered.map(d => d.date))].sort();
+            console.log(`DEBUG: Available dates after filtering:`, uniqueDates);
+        }
 
         // 6. Calculate data for Bar charts using the correctly filtered data
         const barChartGroups = {};

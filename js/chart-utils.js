@@ -165,6 +165,7 @@ window.chartUtils = (function() {
 
     const chartColors = {
         main: ['#34568B', '#FF6F61', '#6B5B95', '#88B04B', '#F7CAC9', '#92A8D1', '#955251', '#B565A7', '#009B77', '#DD4124', '#45B8AC', '#EFC050', '#5B5EA6', '#9B2335', '#DFCFBE', '#55B4B0', '#E15D44', '#7FCDCD', '#BC243C', '#C3447A'],
+        processAreaColors: ['#34568B', '#FF6F61', '#6B5B95', '#88B04B', '#92A8D1', '#009B77', '#EFC050', '#5B5EA6'],
         planned: 'rgba(54, 162, 235, 0.6)',
         actual: 'rgba(255, 99, 132, 0.6)',
         positive_variance: 'rgba(75, 192, 192, 0.6)', // Green
@@ -185,7 +186,9 @@ window.chartUtils = (function() {
     };
 
     const productColors = {};
+    const processAreaColors = {};
     let colorIndex = 0;
+    let processAreaColorIndex = 0;
 
     function getProductColor(productName) {
         if (!productName) return chartColors.main[chartColors.main.length - 1];
@@ -194,6 +197,15 @@ window.chartUtils = (function() {
             colorIndex++;
         }
         return productColors[productName];
+    }
+
+    function getProcessAreaColor(processAreaName) {
+        if (!processAreaName) return chartColors.processAreaColors[chartColors.processAreaColors.length - 1];
+        if (!processAreaColors[processAreaName]) {
+            processAreaColors[processAreaName] = chartColors.processAreaColors[processAreaColorIndex % chartColors.processAreaColors.length];
+            processAreaColorIndex++;
+        }
+        return processAreaColors[processAreaName];
     }
 
     return {
@@ -205,7 +217,8 @@ window.chartUtils = (function() {
         renderPaginationControls,
         destroyChart,
         fabPointStyles,
-        getProductColor
+        getProductColor,
+        getProcessAreaColor
     };
 
 })(); 
