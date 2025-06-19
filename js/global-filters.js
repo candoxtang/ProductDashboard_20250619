@@ -117,10 +117,22 @@ document.addEventListener('dataReady', () => {
 
     function updateTimeRangeDisplay() {
         const timeRangeElement = document.getElementById('time-range-display');
-        if (timeRangeElement && window.dateUtils) {
-            const aggregationLevel = window.globalFilters.aggregationLevel;
-            const displayText = window.dateUtils.formatTimeRangeDisplay(aggregationLevel);
-            timeRangeElement.textContent = displayText;
+        if (timeRangeElement && window.dateUtils && window.dateUtils.formatTimeRangeDisplay) {
+            try {
+                const aggregationLevel = window.globalFilters.aggregationLevel;
+                const displayText = window.dateUtils.formatTimeRangeDisplay(aggregationLevel);
+                timeRangeElement.textContent = displayText;
+                console.log(`Time range updated: ${aggregationLevel} -> ${displayText}`);
+            } catch (error) {
+                console.error('Error updating time range display:', error);
+                timeRangeElement.textContent = `Current ${window.globalFilters.aggregationLevel}`;
+            }
+        } else {
+            console.log('Time range display not ready:', {
+                element: !!timeRangeElement,
+                dateUtils: !!window.dateUtils,
+                formatFunction: !!(window.dateUtils && window.dateUtils.formatTimeRangeDisplay)
+            });
         }
     }
 
@@ -198,6 +210,11 @@ document.addEventListener('dataReady', () => {
     }
 
     initializeFilters();
+    
+    // Also update time range display after a short delay to ensure everything is loaded
+    setTimeout(() => {
+        updateTimeRangeDisplay();
+    }, 100);
 });
 
 window.getGlobalFilters = function() {
