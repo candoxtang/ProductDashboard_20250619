@@ -297,7 +297,7 @@
                     productId: product.id,
                     total_planned: 0,
                     total_actual: 0,
-                    variance: 0,
+                    total_variance: 0,
                     scrap_cost: totalDailyScrapCost, // Apply new realistic cost
                     byProcessArea: {}
                 };

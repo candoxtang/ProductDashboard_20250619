@@ -183,9 +183,11 @@ window.dateUtils = (function() {
                 break;
             case 'Day':
             default:
+                // For Day view, show data from the past 7 days to provide meaningful comparison
                 startDate = new Date(today);
-                startDate.setDate(today.getDate() - 1); // Yesterday
-                endDate = new Date(startDate);
+                startDate.setDate(today.getDate() - 7); // Past 7 days
+                endDate = new Date(today);
+                endDate.setDate(today.getDate() - 1); // Until yesterday
                 break;
         }
         return { startDate, endDate };
@@ -332,7 +334,7 @@ window.dateUtils = (function() {
                 const entry = processEntry(groupName);
                 entry.total_planned += summaryEntry.total_planned;
                 entry.total_actual += summaryEntry.total_actual;
-                entry.variance += summaryEntry.variance;
+                entry.variance += summaryEntry.total_variance;
                 entry.scrap_cost += summaryEntry.scrap_cost || 0;
                 entry.count++;
             } else if (aggregateBy === 'processArea') {
